@@ -42,12 +42,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.DividedDifferenceInterpolator;
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.NevilleInterpolator;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -80,11 +88,14 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import database.DatabaseManager;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
+import model.IncliSpeed;
 import model.LocationType;
 import model.Statistics;
 import model.TPLocation;
 import model.TableOfSpeeds;
+import model.TableOfSpeedsContinous;
 import utils.KmlUtils;
+import utils.ListUtils;
 import utils.MathOperation;
 import utils.StatisticsUtil;
 import utils.listeners.KmlParseProgressListener;
@@ -106,6 +117,8 @@ import javax.swing.KeyStroke;
 
 public class Main extends JFrame implements ChartMouseListener, MouseListener, ActionListener {
 	private static final long serialVersionUID = -8622730863892625194L;
+	
+	private static final int STEPS = 1;
 	
 	private static final String OPEN_EVT = "open";
 	private static final String EDIT_STRETCH_EVT = "edit_stretch";
@@ -173,7 +186,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 	public Main() {
 		setTitle("Tracker");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon("/logo.png").getImage());
+		setIconImage(new ImageIcon("images/logo.png").getImage());
 		setBounds(100, 500, 1086, 731);
 		
 		useProxy();
@@ -217,18 +230,18 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 	private void showNumberStatisticsPanel(Statistics stats){
 		final double pC = 100/(double)90; 
 		
-		labelDistance.setText("Distância: " + new DecimalFormat("#.##").format(stats.getLength()/(double)1000) + "km");
+		labelDistance.setText("Distï¿½ncia: " + new DecimalFormat("#.##").format(stats.getLength()/(double)1000) + "km");
 		
-		labelElevation.setText("Elevação Min Avg Max: " + new DecimalFormat("#").format(stats.getMinElevation()) + "m  " + 
+		labelElevation.setText("Elevaï¿½ï¿½o Min Avg Max: " + new DecimalFormat("#").format(stats.getMinElevation()) + "m  " + 
 				new DecimalFormat("#").format(stats.getAvgElevation()) + "m  " + new DecimalFormat("#").format(stats.getMaxElevation()) + "m");
 
-		labelElevationGainLoss.setText("Ganho/Perda de Elevação: " + new DecimalFormat("#").format(stats.getElevationGain())
+		labelElevationGainLoss.setText("Ganho/Perda de Elevaï¿½ï¿½o: " + new DecimalFormat("#").format(stats.getElevationGain())
 				+ "m  " + new DecimalFormat("#").format(stats.getElevationLoss()) + "m");
 		
-		labelInclinationMax.setText("Inclinação Máxima: " + new DecimalFormat("#.#").format(stats.getMaxInclinationPositive()*pC) + "%  "
+		labelInclinationMax.setText("Inclinaï¿½ï¿½o Mï¿½xima: " + new DecimalFormat("#.#").format(stats.getMaxInclinationPositive()*pC) + "%  "
 				+ new DecimalFormat("#.#").format(stats.getMaxInclinationNegative()*pC) + "%");
 		
-		labelInclinationAvg.setText("Inclinação Média: " + new DecimalFormat("#.#").format(stats.getAvgInclinationPositive()*pC) + "%  " 
+		labelInclinationAvg.setText("Inclinaï¿½ï¿½o Mï¿½dia: " + new DecimalFormat("#.#").format(stats.getAvgInclinationPositive()*pC) + "%  " 
 				+ new DecimalFormat("#.#").format(stats.getAvgInclinationNegative()*pC) + "%");
 	}
 	
@@ -295,7 +308,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
         });
 	    toolBar.add(selectTypeButton);
 	    
-	    eraseSelectionsButton = makeNavigationButton("erase", ERASE_STRETCHS_EVT, "Apagar todas as marcações da trilha");
+	    eraseSelectionsButton = makeNavigationButton("erase", ERASE_STRETCHS_EVT, "Apagar todas as marcaï¿½ï¿½es da trilha");
 	    eraseSelectionsButton.setEnabled(false);
 	    toolBar.add(eraseSelectionsButton);
 	    
@@ -312,7 +325,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 	    openDatabaseButton = makeNavigationButton("database_conf", OPEN_FROM_DATABASE_EVT, "Editar trilhas salvas no banco");
 	    toolBar.add(openDatabaseButton);
 	    
-	    statisticsButton = makeNavigationButton("calc", STATISTICS_EVT, "Ver estatística");
+	    statisticsButton = makeNavigationButton("calc", STATISTICS_EVT, "Ver estatï¿½stica");
 	    toolBar.add(statisticsButton);
 	}
 	
@@ -659,14 +672,14 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 		if(wasMouseRightClickEvent || escapeMouseLeftClickEvent)
 			return;
 
-		if(firstClick){ //Usuário deu o primeiro click
+		if(firstClick){ //Usuï¿½rio deu o primeiro click
 			escapeMouseMoveEvent = false;
 			selStart = getDomainFromClick(e);
 			selEnd = selStart;
 		}else{
 			selectTypeButton.setEnabled(true);
 			escapeMouseLeftClickEvent = true;
-			escapeMouseMoveEvent = true; //Impede que movimentos do mouse apaguem a seleção atual
+			escapeMouseMoveEvent = true; //Impede que movimentos do mouse apaguem a seleï¿½ï¿½o atual
 			selEnd = getDomainFromClick(e);
 			
 			setSelection(selStart, selEnd);
@@ -721,7 +734,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(SwingUtilities.isRightMouseButton(e)){ //Botão direito sempre apaga a seleção
+		if(SwingUtilities.isRightMouseButton(e)){ //Botï¿½o direito sempre apaga a seleï¿½ï¿½o
 			backToNormalStateOfSelection();
 		}else{
 			wasMouseRightClickEvent = false;
@@ -770,7 +783,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 	}
 	
 	private void eraseAllSelections(){
-		int res = JOptionPane.showConfirmDialog(this, "Isso removerá todas as marcações que você fez nessa trilha. Continuar?", "Remover Marcações", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		int res = JOptionPane.showConfirmDialog(this, "Isso removerï¿½ todas as marcaï¿½ï¿½es que vocï¿½ fez nessa trilha. Continuar?", "Remover Marcaï¿½ï¿½es", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		
 		if(res != JOptionPane.OK_OPTION)
 			return;
@@ -800,7 +813,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 		String trailName = getNameFromFile(Session.currentSourceFile);
 		
 		if(db.contains(trailName)){
-			int res = JOptionPane.showConfirmDialog(this, "Essa trilha já existe no banco. Deseja substituir?", "Substituição", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			int res = JOptionPane.showConfirmDialog(this, "Essa trilha jï¿½ existe no banco. Deseja substituir?", "Substituiï¿½ï¿½o", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 			if(res != JOptionPane.YES_OPTION)
 				return;
 		}
@@ -809,11 +822,11 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 		
 		deleteDatabaseButton.setEnabled(true);
 		
-		JOptionPane.showConfirmDialog(this, "A trilha foi inserida com sucesso.", "Inserção Finalizada", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showConfirmDialog(this, "A trilha foi inserida com sucesso.", "Inserï¿½ï¿½o Finalizada", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	private void deleteCurrentTrailInDatabase(){
-		int res = JOptionPane.showConfirmDialog(this, "Você está prestes a remover permanentemente essa trilha do banco. Continuar?", "Remoção", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		int res = JOptionPane.showConfirmDialog(this, "Vocï¿½ estï¿½ prestes a remover permanentemente essa trilha do banco. Continuar?", "Remoï¿½ï¿½o", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		
 		if(res != JOptionPane.YES_OPTION)
 			return;
@@ -824,7 +837,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 		
 		deleteDatabaseButton.setEnabled(false);
 		
-		JOptionPane.showConfirmDialog(this, "A trilha foi removida do banco mas você ainda pode mexer nela.", "Remoção Finalizada", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showConfirmDialog(this, "A trilha foi removida do banco mas vocï¿½ ainda pode mexer nela.", "Remoï¿½ï¿½o Finalizada", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	private void openFromDatabase(){
@@ -861,21 +874,21 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
         }
 	}
 	
-	private void calculateStatistics(){
+	private void showInclinationSpeedGraphDiscrete(){
 		try {
 			String [] names = db.getAllTrailsNames();
-			TableOfSpeeds speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]));
+			TableOfSpeeds speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), STEPS);
 			TableOfSpeeds speedTable2;
 			
 			for(int i = 1; i < names.length; i++){
-				speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]));
+				speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), STEPS);
 				speedTable.setCounts(MathOperation.sumMatrix(speedTable.getCounts(), speedTable2.getCounts()));
 				speedTable.setSpeeds(MathOperation.sumMatrix(speedTable.getSpeeds(), speedTable2.getSpeeds()));
 			}
 			
 			double [][] avgSpeedTable = MathOperation.divideMatrix(speedTable.getSpeeds(), speedTable.getCounts());
 			
-			SpeedPerInclinationGraph graph = new SpeedPerInclinationGraph(avgSpeedTable);
+			SpeedPerInclinationGraph graph = new SpeedPerInclinationGraph(avgSpeedTable, STEPS);
 			graph.setLocationRelativeTo(null);
 			graph.pack();
 			graph.setVisible(true);
@@ -883,6 +896,129 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 			e.printStackTrace();
 		}
 	}
+	
+	private void showInclinationSpeedGraphContinuous(){
+		try {
+			String [] names = db.getAllTrailsNames();
+			TableOfSpeeds speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), STEPS);
+			TableOfSpeeds speedTable2;
+			
+			for(int i = 1; i < names.length; i++){
+				speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), STEPS);
+				speedTable.setCounts(MathOperation.sumMatrix(speedTable.getCounts(), speedTable2.getCounts()));
+				speedTable.setSpeeds(MathOperation.sumMatrix(speedTable.getSpeeds(), speedTable2.getSpeeds()));
+			}
+			
+			double [][] avgSpeedTable = MathOperation.divideMatrix(speedTable.getSpeeds(), speedTable.getCounts());
+			
+			double speed;
+			double inclination;
+			
+			UnivariateInterpolator interpolator = new LoessInterpolator();
+			List<UnivariateFunction> listFunc = new ArrayList<UnivariateFunction>();
+
+			for(int i = 0; i < 5; i++){
+				List<Double> inclinations = new ArrayList<Double>();
+				List<Double> speeds = new ArrayList<Double>();
+				
+				for(int j = 0; j < avgSpeedTable[i].length; j++){
+					speed = avgSpeedTable[i][j];
+					
+					if(speed == 0)
+						continue;
+					
+					inclination = j - 90;
+					
+					inclinations.add(inclination);
+					speeds.add(speed);
+				}
+				
+/*				System.out.println(Arrays.toString(inclinations.stream().mapToDouble(j -> j).toArray()));
+				System.out.println(Arrays.toString(speeds.stream().mapToDouble(j -> j).toArray()));
+				System.out.println("\n");*/
+				
+				if(inclinations.size() > 0){
+					try{
+						listFunc.add(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
+							speeds.stream().mapToDouble(j -> j).toArray()));
+					}catch(Exception e){
+						listFunc.add(null);
+					}
+				}else
+					listFunc.add(null);
+			}
+			
+			SpeedPerInclinationGraph graph = new SpeedPerInclinationGraph(listFunc, STEPS);
+			graph.setLocationRelativeTo(null);
+			graph.pack();
+			graph.setVisible(true);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+	
+/*	private void showInclinationSpeedGraphContinuous(){
+		try {
+			String [] names = db.getAllTrailsNames();
+			List<TableOfSpeedsContinous> baseSpeedTables = StatisticsUtil.calculateTableOfSpeedsContinuous(db.load(names[0]));
+			List<IncliSpeed> baseIncliSpeedList;
+			
+			List<TableOfSpeedsContinous> currSpeedTables = new ArrayList<TableOfSpeedsContinous>();
+			TableOfSpeedsContinous currBaseTable;
+			
+			for(int i = 1; i < names.length; i++){
+				currSpeedTables = StatisticsUtil.calculateTableOfSpeedsContinuous(db.load(names[0]));
+				
+				for(int j = 0; j < currSpeedTables.size(); j++){
+					currBaseTable = baseSpeedTables.get(j);
+					currBaseTable.getInclinations().addAll(currSpeedTables.get(j).getInclinations());
+					currBaseTable.getSpeeds().addAll(currSpeedTables.get(j).getSpeeds());
+				}
+			}
+			
+			System.out.println("ConversÃ£o para a Tabela Base concluÃ­da...!");
+			
+			double [] speeds;
+			double [] inclinations;
+			UnivariateInterpolator interpolator = new SplineInterpolator();
+			
+			for(TableOfSpeedsContinous table: baseSpeedTables){
+				ListUtils.sort(table.getInclinations(), table.getSpeeds());
+				System.out.println("Tabela ordenada...!");
+				
+				speeds = table.getSpeeds().stream().mapToDouble(i -> i).toArray();
+				inclinations = table.getInclinations().stream().mapToDouble(i -> i).toArray();
+				
+				System.out.println("Tabela transformada para array...!");
+				
+				table.setFunction(interpolator.interpolate(inclinations, speeds));
+				System.out.println("Tabela interpolada...!");
+			}			
+			double [] speeds;
+			double [] inclinations;
+			UnivariateInterpolator interpolator = new SplineInterpolator();
+			
+			for(TableOfSpeedsContinous table: baseSpeedTables){
+				ListUtils.sort(table.getInclinations(), table.getSpeeds());
+				System.out.println("Tabela ordenada...!");
+				
+				speeds = table.getSpeeds().stream().mapToDouble(i -> i).toArray();
+				inclinations = table.getInclinations().stream().mapToDouble(i -> i).toArray();
+				
+				System.out.println("Tabela transformada para array...!");
+				
+				table.setFunction(interpolator.interpolate(inclinations, speeds));
+				System.out.println("Tabela interpolada...!");
+			}
+			
+			SpeedPerInclinationGraph graph = new SpeedPerInclinationGraph(currSpeedTables);
+			graph.setLocationRelativeTo(null);
+			graph.pack();
+			graph.setVisible(true);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}*/
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -899,7 +1035,7 @@ public class Main extends JFrame implements ChartMouseListener, MouseListener, A
 		}else if(e.getActionCommand().equals(DELETE_IN_DATABASE_EVT)){
 			deleteCurrentTrailInDatabase();
 		}else if(e.getActionCommand().equals(STATISTICS_EVT)){
-			calculateStatistics();
+			showInclinationSpeedGraphContinuous();
 		}
 	}
 	

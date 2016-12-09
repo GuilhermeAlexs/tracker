@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/commons-io-2.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/JavaAPIforKml-2.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jaxb-api-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jaxb-impl-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jfreechart-1.0.19-experimental.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jfreechart-1.0.19-swt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jfreesvg-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jxmapviewer2-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/orsoncharts-1.4-eval-nofx.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/orsonpdf-1.6-eval.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/servlet.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/json-20160810.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/fluent-hc-4.5.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/httpclient-4.5.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/httpclient-cache-4.5.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/httpclient-win-4.5.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/httpmime-4.5.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jna-4.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/jna-platform-4.1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

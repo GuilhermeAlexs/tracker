@@ -27,9 +27,10 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
 import model.LocationType;
-import model.TableOfSpeedsContinous;
 
 public class SpeedPerInclinationGraph extends JFrame {
+	private static final long serialVersionUID = 2450136146764792751L;
+	
 	private JPanel contentPane;
 	private ChartPanel chartPanel;
 	
@@ -50,7 +51,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	}
 	
 	private void initGUI(){
-		setTitle("Grráfico de Velocidades");
+		setTitle("Grï¿½fico de Velocidades");
 		setIconImage(new ImageIcon("/logo.png").getImage());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -120,7 +121,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    XYPlot plot = (XYPlot) chart.getPlot(); 
 
 	    NumberAxis domain = (NumberAxis) plot.getDomainAxis();
-        domain.setLabel("Inclinação");
+        domain.setLabel("Inclinaï¿½ï¿½o");
         domain.setLabelPaint(new Color(200,200,200));
         domain.setLabelFont(domain.getTickLabelFont().deriveFont(14.0f));
         domain.setTickLabelsVisible(true);

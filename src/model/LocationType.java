@@ -3,7 +3,7 @@ package model;
 import java.io.Serializable;
 
 public enum LocationType  implements Serializable{
-	ROAD(0,"Estrada"), TRAIL(1, "Trilha"), RIVER(2, "Rio"), SNOW(3, "Neve"), FOREST(4, "Floresta"), INVALID(5, "Invalido");
+	ROAD(0,"Estrada"), TRAIL(1, "Trilha"), RIVER(2, "Rio"), SNOW(3, "Neve"), FOREST(4, "Floresta"), INVALID(5, "Invalido"), DESERT(5, "Deserto");
 	
 	private int value;
 	private String name;

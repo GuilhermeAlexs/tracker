@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Properties;
 
+import model.StretchType;
 import model.TPLocation;
 
 public class DatabaseManager {
@@ -37,23 +38,16 @@ public class DatabaseManager {
 		}
 	}
 	
-	private void removeDuplicates(){
-		String files = infoProperties.getProperty("files");
+	public void renameTrail(String oldName, String newName){
+		String names = infoProperties.getProperty("files");
+		names = names.replace(oldName, newName);
+		File f = new File("database/" + oldName + ".mtl");
+		f.renameTo(new File("database/" + newName + ".mtl"));
+		infoProperties.put("files", names);
 		
-		String [] names = getAllTrailsNames();
-		
-		for(int i = 0; i < names.length; i++){
-			for(int j = i + 1; j < names.length; j++){
-				if(names[i].equals(names[j])){
-					files = files.replaceFirst(names[i] + ";", "");
-					names[j] = "<deleted>";
-				}
-			}
-		}
-		
-		infoProperties.put("files", files);
+		saveDatabaseInfo();
 	}
-
+	
 	private Properties loadDatabaseInfo(){
 		Properties info = null;
 		
@@ -106,6 +100,36 @@ public class DatabaseManager {
 			return false;
 		
 		return true;
+	}
+	
+	public void saveStretchTypes(List<StretchType> types){
+		try (
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("database/types.sty"))) {
+			oos.writeObject(types);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public List<StretchType> loadStretchTypes(){	
+		List<StretchType> types = null;
+		
+		File file = new File("database/types.sty");
+		
+		if(!file.exists())
+			return null;
+		
+		try (
+			ObjectInputStream ois
+			= new ObjectInputStream(new FileInputStream(file))) {
+
+			types = (List<StretchType>) ois.readObject();
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return types;
 	}
 	
 	public void insert(String name, List<TPLocation> trail){

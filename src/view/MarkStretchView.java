@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 
 import javax.swing.JButton;
@@ -13,21 +14,23 @@ import model.TPLocation;
 import view.listeners.StretchTypeChangeListener;
 
 import javax.swing.JLabel;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JRadioButton;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.ActionEvent;
 
-public class MarkStretchView extends JDialog {
+public class MarkStretchView extends JDialog implements MouseListener {
 	private static final long serialVersionUID = -5467253972384413352L;
 	private final JPanel contentPanel = new JPanel();
 	private int selStart = 0;
 	private int selEnd = 0;
-
+	private JLabel selectedType = null;
+	private Color selectionColor = new Color(190,190,190);
+	
 	private StretchTypeChangeListener stretchChangeListener;
 	
 	public MarkStretchView(int start, int end, StretchTypeChangeListener stretchChangeListener) {
@@ -36,176 +39,115 @@ public class MarkStretchView extends JDialog {
 		this.selEnd = end;
 		
 		setTitle("Tipo de Trecho");
-		setBounds(100, 100, 493, 191);
+		setBounds(100, 100, 493, 129);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		gbl_contentPanel.columnWidths = new int[]{80, 80, 80, 80, 80, 80, 0};
-		gbl_contentPanel.rowHeights = new int[]{48, 24, 0, 0};
+		gbl_contentPanel.rowHeights = new int[]{48, 0, 0};
 		gbl_contentPanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		contentPanel.setLayout(gbl_contentPanel);
 		{
-			JLabel lblNewLabel = new JLabel("");
-			lblNewLabel.setIcon(new ImageIcon("images/trail.png"));
+			JLabel btnTrail = new JLabel("Trilha");
+			btnTrail.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnTrail.setOpaque(true);
+			btnTrail.setBackground(selectionColor);
+			this.selectedType = btnTrail;
+			btnTrail.setIcon(new ImageIcon("images/trail.png"));
+			btnTrail.setHorizontalTextPosition(JLabel.CENTER);
+			btnTrail.setVerticalTextPosition(JLabel.BOTTOM);
+			btnTrail.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.fill = GridBagConstraints.VERTICAL;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel.gridx = 0;
 			gbc_lblNewLabel.gridy = 0;
-			contentPanel.add(lblNewLabel, gbc_lblNewLabel);
+			contentPanel.add(btnTrail, gbc_lblNewLabel);
 		}
 		{
-			JLabel lblNewLabel_3 = new JLabel("");
-			lblNewLabel_3.setIcon(new ImageIcon("images/river.png"));
+			JLabel btnRiver = new JLabel("Rio");
+			btnRiver.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnRiver.setIcon(new ImageIcon("images/river.png"));
+			btnRiver.setHorizontalTextPosition(JLabel.CENTER);
+			btnRiver.setVerticalTextPosition(JLabel.BOTTOM);
+			btnRiver.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
 			gbc_lblNewLabel_3.anchor = GridBagConstraints.NORTH;
 			gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel_3.gridx = 1;
 			gbc_lblNewLabel_3.gridy = 0;
-			contentPanel.add(lblNewLabel_3, gbc_lblNewLabel_3);
+			contentPanel.add(btnRiver, gbc_lblNewLabel_3);
 		}
 		{
-			JLabel lblNewLabel_1 = new JLabel("");
-			lblNewLabel_1.setIcon(new ImageIcon("images/road.png"));
+			JLabel btnRoad = new JLabel("Estrada");
+			btnRoad.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnRoad.setIcon(new ImageIcon("images/road.png"));
+			btnRoad.setHorizontalTextPosition(JLabel.CENTER);
+			btnRoad.setVerticalTextPosition(JLabel.BOTTOM);
+			btnRoad.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 			gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTH;
 			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel_1.gridx = 2;
 			gbc_lblNewLabel_1.gridy = 0;
-			contentPanel.add(lblNewLabel_1, gbc_lblNewLabel_1);
+			contentPanel.add(btnRoad, gbc_lblNewLabel_1);
 		}
 		{
-			JLabel lblNewLabel_4 = new JLabel("");
-			lblNewLabel_4.setIcon(new ImageIcon("images/neve.png"));
+			JLabel btnSnow = new JLabel("Neve");
+			btnSnow.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnSnow.setIcon(new ImageIcon("images/neve.png"));
+			btnSnow.setHorizontalTextPosition(JLabel.CENTER);
+			btnSnow.setVerticalTextPosition(JLabel.BOTTOM);
+			btnSnow.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel_4 = new GridBagConstraints();
 			gbc_lblNewLabel_4.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel_4.gridx = 3;
 			gbc_lblNewLabel_4.gridy = 0;
-			contentPanel.add(lblNewLabel_4, gbc_lblNewLabel_4);
+			contentPanel.add(btnSnow, gbc_lblNewLabel_4);
 		}
 		{
-			JLabel lblNewLabel_2 = new JLabel("");
-			lblNewLabel_2.setIcon(new ImageIcon("images/forest.png"));
+			JLabel btnForest = new JLabel("Floresta");
+			btnForest.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnForest.setIcon(new ImageIcon("images/forest.png"));
+			btnForest.setHorizontalTextPosition(JLabel.CENTER);
+			btnForest.setVerticalTextPosition(JLabel.BOTTOM);
+			btnForest.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 			gbc_lblNewLabel_2.anchor = GridBagConstraints.NORTH;
 			gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel_2.gridx = 4;
 			gbc_lblNewLabel_2.gridy = 0;
-			contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
+			contentPanel.add(btnForest, gbc_lblNewLabel_2);
 		}
 		{
-			JLabel lblNewLabel_5 = new JLabel("");
-			lblNewLabel_5.setIcon(new ImageIcon("images/delete.png"));
+			JLabel btnDelete = new JLabel("Deletar");
+			btnDelete.setBorder(new EmptyBorder(10, 15, 10, 15));
+			btnDelete.setIcon(new ImageIcon("images/delete.png"));
+			btnDelete.setHorizontalTextPosition(JLabel.CENTER);
+			btnDelete.setVerticalTextPosition(JLabel.BOTTOM);
+			btnDelete.addMouseListener(this);
 			GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 			gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 0);
 			gbc_lblNewLabel_5.gridx = 5;
 			gbc_lblNewLabel_5.gridy = 0;
-			contentPanel.add(lblNewLabel_5, gbc_lblNewLabel_5);
+			contentPanel.add(btnDelete, gbc_lblNewLabel_5);
 		}
 		{
-			JLabel lblTrilha = new JLabel("Trilha");
-			GridBagConstraints gbc_lblTrilha = new GridBagConstraints();
-			gbc_lblTrilha.insets = new Insets(0, 0, 5, 5);
-			gbc_lblTrilha.gridx = 0;
-			gbc_lblTrilha.gridy = 1;
-			contentPanel.add(lblTrilha, gbc_lblTrilha);
+			JLabel lblDesert = new JLabel("Deserto");
+			lblDesert.setBorder(new EmptyBorder(10, 15, 10, 15));
+			lblDesert.setIcon(new ImageIcon("images/desert.png"));
+			lblDesert.setHorizontalTextPosition(JLabel.CENTER);
+			lblDesert.setVerticalTextPosition(JLabel.BOTTOM);
+			lblDesert.addMouseListener(this);
+			GridBagConstraints gbc_lblDesert = new GridBagConstraints();
+			gbc_lblDesert.insets = new Insets(0, 0, 0, 5);
+			gbc_lblDesert.gridx = 0;
+			gbc_lblDesert.gridy = 1;
+			contentPanel.add(lblDesert, gbc_lblDesert);
 		}
-		{
-			JLabel lblLeitoDeRio = new JLabel("Leito de Rio");
-			GridBagConstraints gbc_lblLeitoDeRio = new GridBagConstraints();
-			gbc_lblLeitoDeRio.insets = new Insets(0, 0, 5, 5);
-			gbc_lblLeitoDeRio.gridx = 1;
-			gbc_lblLeitoDeRio.gridy = 1;
-			contentPanel.add(lblLeitoDeRio, gbc_lblLeitoDeRio);
-		}
-		{
-			JLabel lblAsfalto = new JLabel("Asfalto");
-			GridBagConstraints gbc_lblAsfalto = new GridBagConstraints();
-			gbc_lblAsfalto.insets = new Insets(0, 0, 5, 5);
-			gbc_lblAsfalto.gridx = 2;
-			gbc_lblAsfalto.gridy = 1;
-			contentPanel.add(lblAsfalto, gbc_lblAsfalto);
-		}
-		{
-			JLabel lblNeve = new JLabel("Neve");
-			GridBagConstraints gbc_lblNeve = new GridBagConstraints();
-			gbc_lblNeve.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNeve.gridx = 3;
-			gbc_lblNeve.gridy = 1;
-			contentPanel.add(lblNeve, gbc_lblNeve);
-		}
-		{
-			JLabel lblFloresta = new JLabel("Floresta");
-			GridBagConstraints gbc_lblFloresta = new GridBagConstraints();
-			gbc_lblFloresta.insets = new Insets(0, 0, 5, 5);
-			gbc_lblFloresta.gridx = 4;
-			gbc_lblFloresta.gridy = 1;
-			contentPanel.add(lblFloresta, gbc_lblFloresta);
-		}
-		{
-			JLabel lblRemover = new JLabel("Remover");
-			GridBagConstraints gbc_lblRemover = new GridBagConstraints();
-			gbc_lblRemover.insets = new Insets(0, 0, 5, 0);
-			gbc_lblRemover.gridx = 5;
-			gbc_lblRemover.gridy = 1;
-			contentPanel.add(lblRemover, gbc_lblRemover);
-		}
-		
-		JRadioButton radioButtonTrail = new JRadioButton("");
-		GridBagConstraints gbc_radioButtonTrail = new GridBagConstraints();
-		gbc_radioButtonTrail.insets = new Insets(0, 0, 0, 5);
-		gbc_radioButtonTrail.gridx = 0;
-		gbc_radioButtonTrail.gridy = 2;
-		radioButtonTrail.setSelected(true);
-		contentPanel.add(radioButtonTrail, gbc_radioButtonTrail);
-	
-	
-		JRadioButton radioButtonRiver = new JRadioButton("");
-		GridBagConstraints gbc_radioButtonRiver = new GridBagConstraints();
-		gbc_radioButtonRiver.insets = new Insets(0, 0, 0, 5);
-		gbc_radioButtonRiver.gridx = 1;
-		gbc_radioButtonRiver.gridy = 2;
-		contentPanel.add(radioButtonRiver, gbc_radioButtonRiver);
-
-		JRadioButton radioButtonRoad = new JRadioButton("");
-		GridBagConstraints gbc_radioButtonRoad = new GridBagConstraints();
-		gbc_radioButtonRoad.insets = new Insets(0, 0, 0, 5);
-		gbc_radioButtonRoad.gridx = 2;
-		gbc_radioButtonRoad.gridy = 2;
-		contentPanel.add(radioButtonRoad, gbc_radioButtonRoad);
-
-		JRadioButton radioButtonSnow = new JRadioButton("");
-		GridBagConstraints gbc_radioButtonSnow = new GridBagConstraints();
-		gbc_radioButtonSnow.insets = new Insets(0, 0, 0, 5);
-		gbc_radioButtonSnow.gridx = 3;
-		gbc_radioButtonSnow.gridy = 2;
-		contentPanel.add(radioButtonSnow, gbc_radioButtonSnow);
-
-		JRadioButton radioButtonForest = new JRadioButton("");
-		GridBagConstraints gbc_radioButtonForest = new GridBagConstraints();
-		gbc_radioButtonForest.insets = new Insets(0, 0, 0, 5);
-		gbc_radioButtonForest.gridx = 4;
-		gbc_radioButtonForest.gridy = 2;
-		contentPanel.add(radioButtonForest, gbc_radioButtonForest);
-		
-    	JRadioButton radioButtonDelete = new JRadioButton("");
-    	GridBagConstraints gbc_radioButtonDelete = new GridBagConstraints();
-    	gbc_radioButtonDelete.gridx = 5;
-    	gbc_radioButtonDelete.gridy = 2;
-    	contentPanel.add(radioButtonDelete, gbc_radioButtonDelete);
-    
-		ButtonGroup group = new ButtonGroup();
-	    group.add(radioButtonTrail);
-	    group.add(radioButtonRoad);
-	    group.add(radioButtonRiver);
-	    group.add(radioButtonSnow);
-	    group.add(radioButtonForest);
-	    group.add(radioButtonDelete);
 	    
-
-
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -218,19 +160,29 @@ public class MarkStretchView extends JDialog {
 						
 						for(int i = selStart; i <= selEnd; i++){
 							loc = Session.currentTrail.get(i);
-							
-							if(radioButtonTrail.isSelected())
-								loc.setType(LocationType.TRAIL);
-							else if(radioButtonRoad.isSelected())
-								loc.setType(LocationType.ROAD);
-							else if(radioButtonRiver.isSelected())
-								loc.setType(LocationType.RIVER);
-							else if(radioButtonSnow.isSelected())
-								loc.setType(LocationType.SNOW);
-							else if(radioButtonForest.isSelected())
-								loc.setType(LocationType.FOREST);
-							else if(radioButtonDelete.isSelected())
-								loc.setType(LocationType.INVALID);
+							switch(selectedType.getText()){
+								case "Trilha":
+									loc.setType(LocationType.TRAIL);
+									break;
+								case "Estrada":
+									loc.setType(LocationType.ROAD);
+									break;
+								case "Rio":
+									loc.setType(LocationType.RIVER);
+									break;
+								case "Neve":
+									loc.setType(LocationType.SNOW);
+									break;
+								case "Floresta":
+									loc.setType(LocationType.FOREST);
+									break;
+								case "Deserto":
+									loc.setType(LocationType.DESERT);
+									break;
+								case "Deletar":
+									loc.setType(LocationType.INVALID);
+									break;
+							}
 							
 							loc.setSelected(false);
 						}
@@ -255,5 +207,44 @@ public class MarkStretchView extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if(selectedType != null){
+			selectedType.setOpaque(false);
+			selectedType.setBackground(null);
+		}
+		
+		JLabel label = (JLabel) e.getSource();
+		label.setOpaque(true);
+		label.setBackground(selectionColor);
+		this.selectedType = label;
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		JLabel label = (JLabel) e.getSource();
+		label.setOpaque(true);
+		label.setBackground(selectionColor);
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		JLabel label = (JLabel) e.getSource();
+		
+		if(selectedType != null && selectedType.getText().equals(label.getText()))
+			return;
+		
+		label.setOpaque(false);
+		label.setBackground(null);
 	}
 }

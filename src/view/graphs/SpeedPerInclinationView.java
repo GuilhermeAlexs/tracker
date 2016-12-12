@@ -4,9 +4,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 public class SpeedPerInclinationView {
-	
-	
-	
+		
 	private CategoryDataset createDataset(double [][] data) {
         final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 

@@ -30,11 +30,28 @@ public class DatabaseManager {
 		try (
 			ObjectOutputStream oos =
 				new ObjectOutputStream(new FileOutputStream("database/tp.info"))) {
-
+			
 			oos.writeObject(infoProperties);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	private void removeDuplicates(){
+		String files = infoProperties.getProperty("files");
+		
+		String [] names = getAllTrailsNames();
+		
+		for(int i = 0; i < names.length; i++){
+			for(int j = i + 1; j < names.length; j++){
+				if(names[i].equals(names[j])){
+					files = files.replaceFirst(names[i] + ";", "");
+					names[j] = "<deleted>";
+				}
+			}
+		}
+		
+		infoProperties.put("files", files);
 	}
 
 	private Properties loadDatabaseInfo(){
@@ -64,6 +81,9 @@ public class DatabaseManager {
 		
 		if(listNames == null)
 			listNames = "";
+		
+		if(listNames.contains(name))
+			listNames = listNames.replaceAll(name + ";", "");
 		
 		listNames = listNames.concat(name + ";");
 		

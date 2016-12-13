@@ -25,7 +25,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
-import model.LocationType;
+import model.TypeConstants;
 import model.StretchType;
 import view.Session;
 
@@ -91,9 +91,14 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();
 	    
 	    Session session = Session.getInstance();
-	    
+
+	    int index = 0;
 		for (Map.Entry<String, StretchType> entry : session.getStretchTypes().entrySet()){
-			r1.setSeriesPaint(session.getStretchTypesIdMap().get(entry.getValue().getId()), entry.getValue().getColor()); 
+			if(entry.getKey().equals(TypeConstants.FIXED_TYPE_INVALID))
+				continue;
+			
+			r1.setSeriesPaint(index, entry.getValue().getColor()); 
+			index++;
 		}
 
 	    r1.setShapesVisible(false);
@@ -155,7 +160,7 @@ public class SpeedPerInclinationGraph extends JFrame {
         int total = 180/steps;
         
         for(int i = 0; i < 5; i++){
-        	XYSeries series = new XYSeries(LocationType.getTypeFromValue(i).getName());
+        	XYSeries series = new XYSeries(i);
 
 	        for(int j = 0; j < total; j++){
 	        	m = ((double)((steps*j) - 90)+((steps*(j+1)) - 90))/(double)2;
@@ -178,24 +183,29 @@ public class SpeedPerInclinationGraph extends JFrame {
         UnivariateFunction function;
 
         Session session = Session.getInstance();
+        String id;
         
         for(int i = 0; i < session.getStretchTypes().size(); i++){
+        	id = getIdFromIndexType(i);
+        	
+        	if(id.equals(TypeConstants.FIXED_TYPE_INVALID)){
+        		continue;
+        	}
+        	
+        	XYSeries series = new XYSeries(session.getStretchTypes().get(id).getName());
         	function = listFunctions.get(i);
         	
-        	if(function == null)
-        		continue;
+        	if(function != null){        	
+		        for(double m = -80; m <= 80; m++){
+		        	try{
+		        		v = function.value(m);
+		        		series.add(m, v);
+		        	}catch(OutOfRangeException e){
+		        		
+		        	}
+		        }
+        	}
         	
-        	XYSeries series = new XYSeries(getIdFromIndexType(i));
-        	
-	        for(double m = -80; m <= 80; m++){
-	        	try{
-	        		v = function.value(m);
-	        		series.add(m, v);
-	        	}catch(OutOfRangeException e){
-	        		
-	        	}
-	        }
-	        
 	        dataset.addSeries(series);
         }
         return dataset;

@@ -19,6 +19,7 @@ import javax.swing.JToolBar;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -62,11 +63,9 @@ public class StretchManager extends JFrame implements ActionListener {
 		
 		listModel = new DefaultListModel<>();
 		
-		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_INVALID));
-		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_TRAIL));
-		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_ROAD));
-		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_RIVER));
-		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_SNOW));
+		for (Map.Entry<String, StretchType> entry : session.getStretchTypes().entrySet()){
+			listModel.addElement(entry.getValue());
+		}
 		
 		listStretchs = new JList<StretchType>(listModel);
 		listStretchs.setCellRenderer(new StretchTypeRenderer());
@@ -79,10 +78,12 @@ public class StretchManager extends JFrame implements ActionListener {
 		btnPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 
 		JButton btnSave = new JButton("Salvar");
+		btnSave.setActionCommand(SAVE_EVT);
 		btnSave.addActionListener(this);
 		btnPanel.add(btnSave);
 
 		JButton btnCancel = new JButton("Cancelar");
+		btnCancel.setActionCommand(CANCEL_EVT);
 		btnCancel.addActionListener(this);
 		btnPanel.add(btnCancel);
 	}

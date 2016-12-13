@@ -1,8 +1,11 @@
 package model;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class StretchType {
+public class StretchType implements Serializable {
+	private static final long serialVersionUID = 4389283309603615536L;
+	
 	private String id;
 	private String name;
 	private Color color;

@@ -114,7 +114,6 @@ public class StatisticsUtil {
 		
 		double [][] matrix = new double[numberOfTypes][180/steps];
 		double [][] counts = new double[numberOfTypes][180/steps];
-		String [] types = new String[numberOfTypes];
 		
 		int index;
 		boolean reset = false;
@@ -122,7 +121,7 @@ public class StatisticsUtil {
 		int mappedIndexType = 0;
 		
 		for(TPLocation2 loc: path){
-			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
+			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
 				reset = true;
 				continue;
 			}
@@ -156,17 +155,16 @@ public class StatisticsUtil {
 				m = -90;
 			
 			index = getIndexByInterval(m, steps);
-		
+			
 			mappedIndexType = idMap.get(lastLoc.getTypeId());
 			
-			types[mappedIndexType] = lastLoc.getTypeId();
 			matrix[mappedIndexType][index] = matrix[mappedIndexType][index] + v;
 			counts[mappedIndexType][index]++;
 
 			lastLoc = loc;
 		}
 		
-		TableOfSpeeds table = new TableOfSpeeds(matrix, counts, types);
+		TableOfSpeeds table = new TableOfSpeeds(matrix, counts);
 		
 		return table;
 	}

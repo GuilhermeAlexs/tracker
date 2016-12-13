@@ -48,7 +48,6 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 						return;
 					}
 					
-
 			        db.renameTrail(selectedNode.getUserObject().toString(), newName);
 					
 			        selectedNode.setUserObject(newName);
@@ -60,7 +59,7 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 				
 		        break;
 			case REMOVE:
-				int resp = JOptionPane.showConfirmDialog(parent, "Você está prestes a excluir uma trilha do Banco de Dados. Isso vai alterar todas as estatísticas. Confirma?", "Exclusão", JOptionPane.QUESTION_MESSAGE);
+				int resp = JOptionPane.showConfirmDialog(parent, "Você está prestes a excluir uma trilha do Banco de Dados. Isso vai alterar todas as estatísticas. Confirma?", "Exclusão", JOptionPane.YES_NO_OPTION);
 				
 				if(resp == JOptionPane.YES_OPTION)
 					selectedNode.removeFromParent();

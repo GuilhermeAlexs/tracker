@@ -1,6 +1,8 @@
 package view;
+
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import model.StretchType;
@@ -11,5 +13,5 @@ public class Session {
 	public static File currentSourceFile;
 	public static List<TPLocation> currentTrail;
 	
-	public static List<StretchType> stretchTypes;
+	public static Map<String, StretchType> stretchTypes;
 }

@@ -108,7 +108,7 @@ public class GeoUtils {
 			loc.setLatitude(curr.getLatitude());
 			loc.setLongitude(curr.getLongitude());
 			loc.setSelected(curr.isSelected());
-			loc.setType(curr.getType());
+			loc.setTypeId(curr.getTypeId());
 			loc.setWhen(curr.getWhen());
 			loc.setAltitude(output);
 			
@@ -149,7 +149,7 @@ public class GeoUtils {
 				newLoc.setAltitude((currLoc.getAltitude() + googleLoc.getAltitude()) / (double)2);
 				
 				
-				newLoc.setType(currLoc.getType());
+				newLoc.setTypeId(currLoc.getTypeId());
 				newLoc.setWhen(currLoc.getWhen());
 				newLoc.setSelected(currLoc.isSelected());
 				

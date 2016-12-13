@@ -156,7 +156,7 @@ public class MarkStretchView extends JDialog implements MouseListener {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						TPLocation loc = null;
+						/*TPLocation loc = null;
 						
 						for(int i = selStart; i <= selEnd; i++){
 							loc = Session.currentTrail.get(i);
@@ -189,7 +189,7 @@ public class MarkStretchView extends JDialog implements MouseListener {
 						
 						MarkStretchView.this.stretchChangeListener.onStretchTypeChanged(Session.currentTrail.get(0).getType());					
 						
-						dispose();
+						dispose();*/
 					}
 				});
 				okButton.setActionCommand("OK");

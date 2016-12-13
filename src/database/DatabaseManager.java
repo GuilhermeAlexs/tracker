@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import model.StretchType;
@@ -102,7 +104,7 @@ public class DatabaseManager {
 		return true;
 	}
 	
-	public void saveStretchTypes(List<StretchType> types){
+	public void saveStretchTypes(Map<String, StretchType> types){
 		try (
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("database/types.sty"))) {
 			oos.writeObject(types);
@@ -111,23 +113,25 @@ public class DatabaseManager {
 		}
 	}
 	
-	public List<StretchType> loadStretchTypes(){	
-		List<StretchType> types = null;
-		
+	@SuppressWarnings("unchecked")
+	public Map<String, StretchType> loadStretchTypes(){	
+		Map<String, StretchType> types = null;
+
 		File file = new File("database/types.sty");
-		
-		if(!file.exists())
-			return null;
-		
-		try (
-			ObjectInputStream ois
-			= new ObjectInputStream(new FileInputStream(file))) {
 
-			types = (List<StretchType>) ois.readObject();
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		if(file.exists()){
+			try (
+				ObjectInputStream ois
+				= new ObjectInputStream(new FileInputStream(file))) {
+	
+				types = (Map<String, StretchType>) ois.readObject();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
+
+		if(types == null)
+			types = new HashMap<String, StretchType>();
 
 		return types;
 	}

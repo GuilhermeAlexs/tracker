@@ -6,12 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import model.IncliSpeed;
-import model.LocationType;
 import model.Statistics;
 import model.TPLocation;
 import model.TableOfSpeeds;
-import model.TableOfSpeedsContinous;
+import model.TypeConstants;
 
 public class StatisticsUtil {
 	public static Statistics calculateStats(List<TPLocation> path){
@@ -41,7 +39,7 @@ public class StatisticsUtil {
 		boolean reset = false;
 		
 		for(TPLocation loc: path){
-			if(loc.getType() == LocationType.INVALID){
+			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
 			}
@@ -120,8 +118,12 @@ public class StatisticsUtil {
 		int index;
 		boolean reset = false;
 		
+		Map<String, Integer> idMap = new HashMap<String, Integer>();
+		int mappedIndexType;
+		int currIndexTypeValue = 0;
+		
 		for(TPLocation loc: path){
-			if(loc.getType() == LocationType.INVALID){
+			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
 			}
@@ -155,9 +157,17 @@ public class StatisticsUtil {
 				m = -90;
 			
 			index = getIndexByInterval(m, steps);
-						
-			matrix[lastLoc.getType().getValue()][index] = matrix[lastLoc.getType().getValue()][index] + v;
-			counts[lastLoc.getType().getValue()][index]++;
+		
+			if(idMap.containsKey(lastLoc.getTypeId())){
+				mappedIndexType = idMap.get(lastLoc.getTypeId());
+			}else{
+				mappedIndexType = currIndexTypeValue;
+				idMap.put(lastLoc.getTypeId(), currIndexTypeValue);
+				currIndexTypeValue++;
+			}
+			
+			matrix[mappedIndexType][index] = matrix[mappedIndexType][index] + v;
+			counts[mappedIndexType][index]++;
 
 			lastLoc = loc;
 		}
@@ -165,74 +175,5 @@ public class StatisticsUtil {
 		TableOfSpeeds table = new TableOfSpeeds(matrix, counts);
 		
 		return table;
-	}
-	
-/*	public static void findAndAvg(List<Double> list, double v){
-		int i = 0;
-		for(Double val: list){
-			if(val.doubleValue() == v){
-				list.set(i, val.doubleValue() + v))
-			}
-			
-			i++;
-		}
-	}*/
-
-	public static List<TableOfSpeedsContinous> calculateTableOfSpeedsContinuous(List<TPLocation> path) throws ParseException{
-		double dx, dh, dt, v, m;
-
-		TPLocation lastLoc = path.get(0);
-		
-		TableOfSpeedsContinous currTable;
-		List<TableOfSpeedsContinous> list = new ArrayList<TableOfSpeedsContinous>();
-
-		for(int i = 0; i < 5; i++)
-			list.add(new TableOfSpeedsContinous());
-		
-		boolean reset = false;
-		
-		for(TPLocation loc: path){
-			if(loc.getType() == LocationType.INVALID){
-				reset = true;
-				continue;
-			}
-			
-			if(reset){
-				reset = false;
-				lastLoc = loc;
-			}
-			
-			if(loc == lastLoc)
-				continue;
-
-			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/1000;
-			dh = (loc.getAltitude() - lastLoc.getAltitude())/1000;
-			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
-			v = Math.abs(dx/dt);
-
-			if(v < 0.5 ){
-				continue;
-			}
-			
-			if(v >= 10){
-				continue;
-			}
-
-			m = Math.toDegrees(Math.atan(((double)dh)/((double)dx)));
-
-			if( m > 90 )
-				m = 90;
-			else if( m < -90)
-				m = -90;
-			
-			currTable = list.get(lastLoc.getType().getValue());
-			
-			currTable.getInclinations().add(m);
-			currTable.getSpeeds().add(v);
-			
-			lastLoc = loc;
-		}
-		
-		return list;
 	}
 }

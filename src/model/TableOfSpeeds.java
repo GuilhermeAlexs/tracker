@@ -3,11 +3,12 @@ package model;
 public class TableOfSpeeds {
 	private double [][] speeds;
 	private double [][] counts;
+	private String [] types;
 	
-	public TableOfSpeeds(double[][] speeds, double[][] counts) {
-		super();
+	public TableOfSpeeds(double[][] speeds, double[][] counts, String types []) {
 		this.speeds = speeds;
 		this.counts = counts;
+		this.types = types;
 	}
 
 	public double[][] getSpeeds() {
@@ -24,5 +25,13 @@ public class TableOfSpeeds {
 
 	public void setCounts(double[][] counts) {
 		this.counts = counts;
+	}
+
+	public String[] getTypes() {
+		return types;
+	}
+
+	public void setTypes(String[] types) {
+		this.types = types;
 	}
 }

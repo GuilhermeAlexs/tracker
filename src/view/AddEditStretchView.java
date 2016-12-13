@@ -108,7 +108,7 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 			String id = fieldName.getText() + now;
 			StretchType newType = new StretchType(id, fieldName.getText(), fieldColor.getBackground());
 			
-			Session.stretchTypes.put(id, newType);
+			Session.getInstance().getStretchTypes().put(id, newType);
 			DefaultListModel<StretchType> model = (DefaultListModel<StretchType>) list.getModel();
 			model.addElement(newType);
 		}else{

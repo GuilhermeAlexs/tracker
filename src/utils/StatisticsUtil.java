@@ -2,17 +2,16 @@ package utils;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import model.Statistics;
-import model.TPLocation;
+import model.TPLocation2;
 import model.TableOfSpeeds;
 import model.TypeConstants;
 
 public class StatisticsUtil {
-	public static Statistics calculateStats(List<TPLocation> path){
+	public static Statistics calculateStats(List<TPLocation2> path){
 		Statistics stats = new Statistics();
 		List<Double> inclinations = new ArrayList<Double>();
 
@@ -35,10 +34,10 @@ public class StatisticsUtil {
 		int inclinationPositiveCount = 0;
 		int inclinationNegativeCount = 0;
 
-		TPLocation lastLoc = path.get(0);
+		TPLocation2 lastLoc = path.get(0);
 		boolean reset = false;
 		
-		for(TPLocation loc: path){
+		for(TPLocation2 loc: path){
 			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
@@ -108,21 +107,21 @@ public class StatisticsUtil {
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
 
-	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation> path, int steps) throws ParseException{
+	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation2> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
-		TPLocation lastLoc = path.get(0);
+		TPLocation2 lastLoc = path.get(0);
 		
-		double [][] matrix = new double[5][180/steps];
-		double [][] counts = new double[5][180/steps];
+		double [][] matrix = new double[numberOfTypes][180/steps];
+		double [][] counts = new double[numberOfTypes][180/steps];
+		String [] types = new String[numberOfTypes];
+		
 		int index;
 		boolean reset = false;
 		
-		Map<String, Integer> idMap = new HashMap<String, Integer>();
-		int mappedIndexType;
-		int currIndexTypeValue = 0;
+		int mappedIndexType = 0;
 		
-		for(TPLocation loc: path){
+		for(TPLocation2 loc: path){
 			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
@@ -158,21 +157,16 @@ public class StatisticsUtil {
 			
 			index = getIndexByInterval(m, steps);
 		
-			if(idMap.containsKey(lastLoc.getTypeId())){
-				mappedIndexType = idMap.get(lastLoc.getTypeId());
-			}else{
-				mappedIndexType = currIndexTypeValue;
-				idMap.put(lastLoc.getTypeId(), currIndexTypeValue);
-				currIndexTypeValue++;
-			}
+			mappedIndexType = idMap.get(lastLoc.getTypeId());
 			
+			types[mappedIndexType] = lastLoc.getTypeId();
 			matrix[mappedIndexType][index] = matrix[mappedIndexType][index] + v;
 			counts[mappedIndexType][index]++;
 
 			lastLoc = loc;
 		}
 		
-		TableOfSpeeds table = new TableOfSpeeds(matrix, counts);
+		TableOfSpeeds table = new TableOfSpeeds(matrix, counts, types);
 		
 		return table;
 	}

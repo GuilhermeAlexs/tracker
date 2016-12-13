@@ -10,7 +10,7 @@ import de.micromata.opengis.kml.v_2_2_0.Folder;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import de.micromata.opengis.kml.v_2_2_0.Placemark;
 import de.micromata.opengis.kml.v_2_2_0.gx.Track;
-import model.TPLocation;
+import model.TPLocation2;
 import utils.listeners.KmlParseProgressListener;
 
 public class KmlUtils {
@@ -39,17 +39,17 @@ public class KmlUtils {
         return null;
 	}
 	
-	public static TPLocation stringToTPLocation(String c){
+	public static TPLocation2 stringToTPLocation(String c){
 		String [] coords = c.split(" ");
-		return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
+		return new TPLocation2(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
 	}
 	
-	public static List<TPLocation> getAllPlacemarks(Kml kml, KmlParseProgressListener listener){
+	public static List<TPLocation2> getAllPlacemarks(Kml kml, KmlParseProgressListener listener){
 		Document doc = (Document) kml.getFeature();
         List<Feature> listFeat = doc.getFeature();
         Iterator<Feature> it = listFeat.iterator(); 
-        List<TPLocation> locs = new ArrayList<TPLocation>();
-        TPLocation lastLoc = null;
+        List<TPLocation2> locs = new ArrayList<TPLocation2>();
+        TPLocation2 lastLoc = null;
         
         while(it.hasNext()){
         	Feature feat = it.next();
@@ -74,7 +74,7 @@ public class KmlUtils {
 
         				int i = 0;
         				for(String c: coords){
-        					TPLocation loc = stringToTPLocation(c);
+        					TPLocation2 loc = stringToTPLocation(c);
         					
         					if(lastLoc != null && GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()) <= 10)
         						continue;

@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -19,14 +20,14 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
 import model.LocationType;
+import model.StretchType;
+import view.Session;
 
 public class SpeedPerInclinationGraph extends JFrame {
 	private static final long serialVersionUID = 2450136146764792751L;
@@ -40,7 +41,6 @@ public class SpeedPerInclinationGraph extends JFrame {
 	
 	public SpeedPerInclinationGraph(List<UnivariateFunction> data, int steps) {
 		this.listFunctions = data;
-		
 		initGUI();
 	}
 	
@@ -62,33 +62,16 @@ public class SpeedPerInclinationGraph extends JFrame {
 		
 		setContentPane(contentPane);
 		
-		showGraphXY(LocationType.TRAIL);
+		showGraphXY();
 	}
 	
-	private void showGraph(LocationType type){
-		JFreeChart barChart = ChartFactory.createBarChart(
-		         null,           
-		         null,            
-		         null,            
-		         createDataset(type),          
-		         PlotOrientation.VERTICAL,           
-		         true, true, false);
-		
-		if(chartPanel == null){
-			chartPanel = new ChartPanel(barChart);
-			getContentPane().add(chartPanel,BorderLayout.CENTER);
-		}else{
-			chartPanel.setChart(barChart);
-		}		
-	}
-	
-	private void showGraphXY(LocationType type){
+	private void showGraphXY(){
 		IntervalXYDataset dataset;
 		
 		if(data != null)
-			dataset = createXYDataset(type);
+			dataset = createXYDataset();
 		else
-			dataset = createXYDatasetContinuous(type);
+			dataset = createXYDatasetContinuous();
 		
 	    final JFreeChart chart = ChartFactory.createXYLineChart(
 	            "XY Series Demo",
@@ -106,14 +89,16 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    chart.getLegend().setItemLabelPadding(new RectangleInsets(2, 10, 2, 10));
 	    
 	    XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();
-	    r1.setSeriesPaint(LocationType.TRAIL.getValue(), Color.GREEN); 
-	    r1.setSeriesPaint(LocationType.ROAD.getValue(), Color.GRAY);
-	    r1.setSeriesPaint(LocationType.RIVER.getValue(), Color.BLUE); 
-	    r1.setSeriesPaint(LocationType.SNOW.getValue(), Color.WHITE); 
-	    r1.setSeriesPaint(LocationType.FOREST.getValue(), new Color(0, 100, 0)); 
+	    
+	    Session session = Session.getInstance();
+	    
+		for (Map.Entry<String, StretchType> entry : session.getStretchTypes().entrySet()){
+			r1.setSeriesPaint(session.getStretchTypesIdMap().get(entry.getValue().getId()), entry.getValue().getColor()); 
+		}
+
 	    r1.setShapesVisible(false);
 	    
-	    for(int i = 0; i < 5; i++){
+	    for(int i = 0; i < session.getStretchTypes().size(); i++){
 	    	r1.setSeriesItemLabelsVisible(i, true);
 	    	r1.setSeriesStroke(i, new BasicStroke(2.8f));
 	    }
@@ -151,18 +136,20 @@ public class SpeedPerInclinationGraph extends JFrame {
 			chartPanel.setChart(chart);
 		}		
 	}
+	
+	private String getIdFromIndexType(int index){
+	    Session session = Session.getInstance();
+	    
+		for (Map.Entry<String, Integer> entry : session.getStretchTypesIdMap().entrySet()){
+			if(entry.getValue() == index){
+				return entry.getKey();
+			}
+		}
+		
+		return null;
+	}
 
-	private CategoryDataset createDataset(LocationType type) {
-        final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
-        for(int j = 3; j < 177; j++){
-    		dataset.addValue(data[type.getValue()][j], ((1*j) - 90) + "% - " + ((1*(j+1)) - 90) + "%", Integer.valueOf(type.getValue()));
-        }
-        
-        return dataset;
-    }
-
-	private IntervalXYDataset createXYDataset(LocationType type) {
+	private IntervalXYDataset createXYDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         double m = 0;
         int total = 180/steps;
@@ -184,18 +171,21 @@ public class SpeedPerInclinationGraph extends JFrame {
         return dataset;
     }
 	
-	private IntervalXYDataset createXYDatasetContinuous(LocationType type) {
+	private IntervalXYDataset createXYDatasetContinuous() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         double v = 0;
         
         UnivariateFunction function;
+
+        Session session = Session.getInstance();
         
-        for(int i = 0; i < 5; i++){
-        	XYSeries series = new XYSeries(LocationType.getTypeFromValue(i).getName());
+        for(int i = 0; i < session.getStretchTypes().size(); i++){
         	function = listFunctions.get(i);
         	
         	if(function == null)
         		continue;
+        	
+        	XYSeries series = new XYSeries(getIdFromIndexType(i));
         	
 	        for(double m = -80; m <= 80; m++){
 	        	try{

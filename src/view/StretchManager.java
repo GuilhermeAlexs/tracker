@@ -1,5 +1,6 @@
 package view;
 
+import model.TypeConstants;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
@@ -38,11 +39,14 @@ public class StretchManager extends JFrame implements ActionListener {
 	
 	private JPanel contentPane;
 	private JList<StretchType> listStretchs;
-
+	private Session session;
+	
 	public StretchManager() {
+		this.session = Session.getInstance();
+		
 		setTitle("Gerenciar Trechos");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 547, 300);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, 450, 300);
 
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -57,7 +61,13 @@ public class StretchManager extends JFrame implements ActionListener {
 		contentPane.add(toolbar, BorderLayout.WEST);
 		
 		listModel = new DefaultListModel<>();
-
+		
+		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_INVALID));
+		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_TRAIL));
+		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_ROAD));
+		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_RIVER));
+		listModel.addElement(session.getStretchTypes().get(TypeConstants.FIXED_TYPE_SNOW));
+		
 		listStretchs = new JList<StretchType>(listModel);
 		listStretchs.setCellRenderer(new StretchTypeRenderer());
 		listStretchs.setBounds(10, 11, 396, 197);
@@ -123,10 +133,10 @@ public class StretchManager extends JFrame implements ActionListener {
 			case REM_EVT:
 				int indexToRemove = listStretchs.getSelectedIndex();
 				listModel.remove(indexToRemove);
-				Session.stretchTypes.remove(indexToRemove);
+				session.getStretchTypes().remove(indexToRemove);
 				break;
 			case SAVE_EVT:
-				DatabaseManager.getInstance().saveStretchTypes(Session.stretchTypes);
+				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
 				break;
 			case CANCEL_EVT:
 				dispose();

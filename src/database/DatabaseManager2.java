@@ -11,20 +11,20 @@ import java.util.Map;
 import java.util.Properties;
 
 import model.StretchType;
-import model.TPLocation2;
+import model.TPLocation;
 
-public class DatabaseManager {
-	private static DatabaseManager INSTANCE;
+public class DatabaseManager2 {
+	private static DatabaseManager2 INSTANCE;
 	
 	private Properties infoProperties;
 	
-	private DatabaseManager(){
+	private DatabaseManager2(){
 		this.infoProperties = loadDatabaseInfo();
 	}
 	
-	public static DatabaseManager getInstance(){
+	public static DatabaseManager2 getInstance(){
 		if(INSTANCE == null)
-			INSTANCE = new DatabaseManager();
+			INSTANCE = new DatabaseManager2();
 		
 		return INSTANCE;
 	}
@@ -130,10 +130,13 @@ public class DatabaseManager {
 			}
 		}
 
+		if(types == null)
+			types = new HashMap<String, StretchType>();
+
 		return types;
 	}
 	
-	public void insert(String name, List<TPLocation2> trail){
+	public void insert(String name, List<TPLocation> trail){
 		try (
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("database/" + name + ".mtl"))) {
 			oos.writeObject(trail);
@@ -156,8 +159,8 @@ public class DatabaseManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<TPLocation2> load(String name) {
-		List<TPLocation2> trail = null;
+	public List<TPLocation> load(String name) {
+		List<TPLocation> trail = null;
 	
 		File file = new File("database/" + name + ".mtl");
 		
@@ -168,7 +171,7 @@ public class DatabaseManager {
 			ObjectInputStream ois
 			= new ObjectInputStream(new FileInputStream(file))) {
 
-			trail = (List<TPLocation2>) ois.readObject();
+			trail = (List<TPLocation>) ois.readObject();
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

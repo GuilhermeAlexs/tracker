@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import database.DatabaseManager;
+import view.listeners.DatabaseTrailSelected;
 
 public class TreePopup extends JPopupMenu implements ActionListener{
 	private final String RENAME = "Renomear...";
@@ -19,10 +20,12 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 	
 	private Component parent;
 	private JTree tree;
+	private DatabaseTrailSelected listener;
 	
-	public TreePopup(Component parent, JTree tree){
+	public TreePopup(Component parent, JTree tree, DatabaseTrailSelected listener){
 		this.parent = parent;
 		this.tree = tree;
+		this.listener = listener;
 		
 		JMenuItem item = new JMenuItem("Renomear...");
 		item.addActionListener(this);
@@ -61,8 +64,20 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 			case REMOVE:
 				int resp = JOptionPane.showConfirmDialog(parent, "VocÃª estÃ¡ prestes a excluir uma trilha do Banco de Dados. Isso vai alterar todas as estatÃ­sticas. Confirma?", "ExclusÃ£o", JOptionPane.YES_NO_OPTION);
 				
-				if(resp == JOptionPane.YES_OPTION)
+				if(resp == JOptionPane.YES_OPTION){
+					String trailName = selectedNode.getUserObject().toString();
+
+					db.delete(trailName);
+					
+					JOptionPane.showConfirmDialog(this, "A trilha foi removida do banco mas você ainda pode mexer nela.", "Remoção Finalizada", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
 					selectedNode.removeFromParent();
+					
+					DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+					model.reload();
+					
+					listener.onDatabaseTrailSelected();
+				}
 				
 				break;
 		}	

@@ -179,6 +179,10 @@ public class DatabaseManager {
 
 	public String [] getAllTrailsNames(){
 		String listNames = infoProperties.getProperty("files");
+		
+		if(listNames == null)
+			return null;
+		
 		String [] names = listNames.split(";");
 		
 		return names;

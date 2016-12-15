@@ -201,9 +201,13 @@ public class SpeedPerInclinationGraph extends JFrame {
         	function = listFunctions.get(i);
         	
         	if(function != null){        	
-		        for(double m = -80; m <= 80; m++){
+		        for(double m = -90; m <= 90; m++){
 		        	try{
 		        		v = function.value(m);
+		        		
+		        		if(v < 0)
+		        			continue;
+		        		
 		        		series.add(m, v);
 		        	}catch(OutOfRangeException e){
 		        		
@@ -212,7 +216,8 @@ public class SpeedPerInclinationGraph extends JFrame {
         	}else{
         		series.setKey(session.getStretchTypes().get(id).getName() + ":<<!null!>>");
         	}
-        		dataset.addSeries(series);
+    		
+        	dataset.addSeries(series);
         }
         return dataset;
     }

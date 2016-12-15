@@ -13,6 +13,19 @@ public class MathOperation {
 		
 		return c;
 	}
+	
+	public static double [][] divideMatrix(double [][] a, double b){
+		double [][] c = new double[a.length][a[0].length];
+		
+		for(int i = 0; i < a.length; i++){
+			for(int j = 0; j < a[0].length; j++){
+				if(b != 0)
+					c[i][j] = a[i][j] / b;
+			}
+		}
+		
+		return c;
+	}
 
 	public static double [][] sumMatrix(double [][] a, double [][] b){
 		double [][] c = new double[a.length][a[0].length];

@@ -136,6 +136,7 @@ public class StretchManager extends JFrame implements ActionListener {
 				break;
 			case SAVE_EVT:
 				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
+				dispose();
 				break;
 			case CANCEL_EVT:
 				dispose();

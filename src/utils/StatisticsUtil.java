@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
+
 import model.Statistics;
 import model.TPLocation2;
 import model.TableOfSpeeds;
@@ -160,7 +164,7 @@ public class StatisticsUtil {
 			
 			matrix[mappedIndexType][index] = matrix[mappedIndexType][index] + v;
 			counts[mappedIndexType][index]++;
-
+			
 			lastLoc = loc;
 		}
 		
@@ -168,4 +172,69 @@ public class StatisticsUtil {
 		
 		return table;
 	}
+	
+	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation2> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
+		double dx, dh, dt, v, m;
+
+		TPLocation2 lastLoc = path.get(0);
+		
+		double [][] matrix = new double[numberOfTypes][180/steps];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][180/steps];
+		
+		int index;
+		boolean reset = false;
+		
+		int mappedIndexType = 0;
+		
+		for(TPLocation2 loc: path){
+			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
+				reset = true;
+				continue;
+			}
+			
+			if(reset){
+				reset = false;
+				lastLoc = loc;
+			}
+			
+			if(loc == lastLoc)
+				continue;
+
+			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/1000;
+			dh = (loc.getAltitude() - lastLoc.getAltitude())/1000;
+			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
+			v = Math.abs(dx/dt);
+
+			if(v < 0.2){
+				continue;
+			}
+			
+			if(v >= 10){
+				continue;
+			}
+
+			m = Math.toDegrees(Math.atan(((double)dh)/((double)dx)));
+
+			if( m > 90 )
+				m = 90;
+			else if( m < -90)
+				m = -90;
+			
+			index = getIndexByInterval(m, steps);
+			
+			mappedIndexType = idMap.get(lastLoc.getTypeId());
+			
+			if(medianFinder[mappedIndexType][index] == null)
+				medianFinder[mappedIndexType][index] = new MedianFinder();
+			
+			medianFinder[mappedIndexType][index].addNum(v);
+			matrix[mappedIndexType][index] = medianFinder[mappedIndexType][index].findMedian();
+			
+			lastLoc = loc;
+		}
+		
+		TableOfSpeeds table = new TableOfSpeeds(matrix, null);
+		
+		return table;
+	}	
 }

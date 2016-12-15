@@ -33,7 +33,7 @@ public class MarkStretchView extends JDialog{
 		this.selEnd = end;
 		
 		setTitle("Tipo de Trecho");
-		setBounds(100, 100, 493, 333);
+		setBounds(100, 100, 300, 260);
 		getContentPane().setLayout(new BorderLayout());
 	    
 		{
@@ -41,7 +41,7 @@ public class MarkStretchView extends JDialog{
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton okButton = new JButton("OK");
+				JButton okButton = new JButton("Selecionar");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						TPLocation2 loc = null;

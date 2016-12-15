@@ -89,6 +89,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    chart.getLegend().setItemLabelPadding(new RectangleInsets(2, 10, 2, 10));
 	    
 	    XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();
+	    XYPlot plot = (XYPlot) chart.getPlot(); 
 	    
 	    Session session = Session.getInstance();
 
@@ -96,6 +97,10 @@ public class SpeedPerInclinationGraph extends JFrame {
 		for (Map.Entry<String, StretchType> entry : session.getStretchTypes().entrySet()){
 			if(entry.getKey().equals(TypeConstants.FIXED_TYPE_INVALID))
 				continue;
+			
+			if(((XYSeriesCollection)plot.getDataset(0)).getSeries(index).getKey().toString().contains("<<!null!>>")){
+				r1.setSeriesVisibleInLegend(index, Boolean.FALSE);
+			}
 			
 			r1.setSeriesPaint(index, entry.getValue().getColor()); 
 			index++;
@@ -108,7 +113,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    	r1.setSeriesStroke(i, new BasicStroke(2.8f));
 	    }
 
-	    XYPlot plot = (XYPlot) chart.getPlot(); 
+
 
 	    NumberAxis domain = (NumberAxis) plot.getDomainAxis();
         domain.setLabel("Inclina��o");
@@ -204,9 +209,10 @@ public class SpeedPerInclinationGraph extends JFrame {
 		        		
 		        	}
 		        }
+        	}else{
+        		series.setKey(session.getStretchTypes().get(id).getName() + ":<<!null!>>");
         	}
-        	
-	        dataset.addSeries(series);
+        		dataset.addSeries(series);
         }
         return dataset;
     }

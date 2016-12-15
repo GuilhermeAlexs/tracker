@@ -10,19 +10,22 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import database.DatabaseManager;
-import view.listeners.DatabaseTrailSelected;
+import view.listeners.DatabaseTrailDeletedListener;
 
 public class TreePopup extends JPopupMenu implements ActionListener{
+	private static final long serialVersionUID = -6041321118922619389L;
+	
 	private final String RENAME = "Renomear...";
 	private final String REMOVE = "Excluir";
 	
 	private Component parent;
 	private JTree tree;
-	private DatabaseTrailSelected listener;
+	private DatabaseTrailDeletedListener listener;
 	
-	public TreePopup(Component parent, JTree tree, DatabaseTrailSelected listener){
+	public TreePopup(Component parent, JTree tree, DatabaseTrailDeletedListener listener){
 		this.parent = parent;
 		this.tree = tree;
 		this.listener = listener;
@@ -76,7 +79,7 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 					DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
 					model.reload();
 					
-					listener.onDatabaseTrailSelected();
+					listener.onDatabaseTrailDeleted();
 				}
 				
 				break;

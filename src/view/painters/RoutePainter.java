@@ -12,7 +12,7 @@ import java.util.List;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 
-import model.TPLocation2;
+import model.TPLocation;
 
 import org.jxmapviewer.painter.Painter;
 
@@ -25,16 +25,16 @@ public class RoutePainter implements Painter<JXMapViewer>
 	private Color color = Color.GREEN;
 	private boolean antiAlias = true;
 	
-	private List<TPLocation2> track;
+	private List<TPLocation> track;
 
 	/**
 	 * @param track the track
 	 */
-	public RoutePainter(List<TPLocation2> track, Color color)
+	public RoutePainter(List<TPLocation> track, Color color)
 	{
 		// copy the list so that changes in the 
 		// original list do not have an effect here
-		this.track = new ArrayList<TPLocation2>(track);
+		this.track = new ArrayList<TPLocation>(track);
 		this.color = color;
 	}
 
@@ -76,7 +76,7 @@ public class RoutePainter implements Painter<JXMapViewer>
 		
 		boolean first = true;
 		
-		for (TPLocation2 l : track)
+		for (TPLocation l : track)
 		{
 			// convert geo-coordinate to world bitmap pixel
 			Point2D pt = map.getTileFactory().geoToPixel(new GeoPosition(l.getLatitude(), l.getLongitude()), map.getZoom());

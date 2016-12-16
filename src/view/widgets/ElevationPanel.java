@@ -36,7 +36,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.Layer;
 
 import model.Statistics;
-import model.TPLocation2;
+import model.TPLocation;
 import view.widgets.events.ElevationGraphListener;
 
 public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener{
@@ -60,11 +60,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	private JLabel labelInclinationAvg;
 	private JLabel labelInclinationMax;
 	
-	private List<TPLocation2> currentTrail;
+	private List<TPLocation> currentTrail;
 	
 	private ElevationGraphListener elevationGraphListener;
 	
-	public ElevationPanel(List<TPLocation2> trail){
+	public ElevationPanel(List<TPLocation> trail){
 		super();
 		
 		this.currentTrail = trail;
@@ -106,11 +106,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		this.elevationGraphListener = elevationGraphListener;
 	}
 
-	public List<TPLocation2> getCurrentTrail() {
+	public List<TPLocation> getCurrentTrail() {
 		return currentTrail;
 	}
 
-	public void setCurrentTrail(List<TPLocation2> currentTrail) {
+	public void setCurrentTrail(List<TPLocation> currentTrail) {
 		this.currentTrail = currentTrail;
 	}
 
@@ -120,9 +120,9 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		double i = 0;
 		double maxAltitude = -1;
 		double minAltitude = 9000;
-		List<TPLocation2> locs = currentTrail;
-		TPLocation2 loc = locs.get(0);
-		Iterator<TPLocation2> it = locs.iterator();
+		List<TPLocation> locs = currentTrail;
+		TPLocation loc = locs.get(0);
+		Iterator<TPLocation> it = locs.iterator();
 		
 		while(it.hasNext()){
 			
@@ -208,7 +208,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		xyPlot.clearDomainMarkers();
 	}
 	
-	public void drawProfileSelection(List<TPLocation2> locs, Color color, boolean foreground){
+	public void drawProfileSelection(List<TPLocation> locs, Color color, boolean foreground){
 		if(locs == null || locs.size() == 0)
 			return;
 		

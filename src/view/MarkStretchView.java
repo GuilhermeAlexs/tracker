@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import model.StretchType;
-import model.TPLocation2;
+import model.TPLocation;
 import view.listeners.StretchTypeChangeListener;
 import view.widgets.StretchTypeRenderer;
 
@@ -44,7 +44,7 @@ public class MarkStretchView extends JDialog{
 				JButton okButton = new JButton("Selecionar");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						TPLocation2 loc = null;
+						TPLocation loc = null;
 						Session session = Session.getInstance();
 						StretchType typeSel = listTypes.getSelectedValue();
 						

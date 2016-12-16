@@ -10,7 +10,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 import database.DatabaseManager;
 import view.listeners.DatabaseTrailDeletedListener;

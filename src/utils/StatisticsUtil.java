@@ -14,13 +14,13 @@ import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
 import database.DatabaseManager;
 import model.Statistics;
-import model.TPLocation2;
+import model.TPLocation;
 import model.TableOfSpeeds;
 import model.TypeConstants;
 import view.Session;
 
 public class StatisticsUtil {
-	public static Statistics calculateStats(List<TPLocation2> path){
+	public static Statistics calculateStats(List<TPLocation> path){
 		Statistics stats = new Statistics();
 		List<Double> inclinations = new ArrayList<Double>();
 
@@ -43,10 +43,10 @@ public class StatisticsUtil {
 		int inclinationPositiveCount = 0;
 		int inclinationNegativeCount = 0;
 
-		TPLocation2 lastLoc = path.get(0);
+		TPLocation lastLoc = path.get(0);
 		boolean reset = false;
 		
-		for(TPLocation2 loc: path){
+		for(TPLocation loc: path){
 			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
@@ -116,10 +116,10 @@ public class StatisticsUtil {
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
 
-	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation2> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
+	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
-		TPLocation2 lastLoc = path.get(0);
+		TPLocation lastLoc = path.get(0);
 		
 		double [][] matrix = new double[numberOfTypes][180/steps];
 		double [][] counts = new double[numberOfTypes][180/steps];
@@ -129,7 +129,7 @@ public class StatisticsUtil {
 		
 		int mappedIndexType = 0;
 		
-		for(TPLocation2 loc: path){
+		for(TPLocation loc: path){
 			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
 				reset = true;
 				continue;
@@ -178,10 +178,10 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation2> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
+	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
-		TPLocation2 lastLoc = path.get(0);
+		TPLocation lastLoc = path.get(0);
 		
 		double [][] matrix = new double[numberOfTypes][180/steps];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][180/steps];
@@ -191,7 +191,7 @@ public class StatisticsUtil {
 		
 		int mappedIndexType = 0;
 		
-		for(TPLocation2 loc: path){
+		for(TPLocation loc: path){
 			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
 				reset = true;
 				continue;

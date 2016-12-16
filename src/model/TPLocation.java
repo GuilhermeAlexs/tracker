@@ -2,18 +2,20 @@ package model;
 
 import java.io.Serializable;
 
-public class TPLocation implements Serializable{
+public class TPLocation implements Serializable{	
+	private static final long serialVersionUID = -1674471144939898278L;
+	
 	private int id;
 	private double latitude;
 	private double longitude;
 	private double altitude;
-	private LocationType type;
+	private String typeId;
 	private String when;
 	private boolean selected;
 	
 	public TPLocation() {
 		this.selected = false;
-		this.type = LocationType.TRAIL;
+		this.typeId = TypeConstants.FIXED_TYPE_TRAIL;
 	}
 	
 	public TPLocation(double latitude, double longitude, double altitude) {
@@ -21,7 +23,7 @@ public class TPLocation implements Serializable{
 		this.longitude = longitude;
 		this.altitude = altitude;
 		this.selected = false;
-		this.type = LocationType.TRAIL;
+		this.typeId = TypeConstants.FIXED_TYPE_TRAIL;
 	}
 	
 	public TPLocation(double latitude, double longitude, double altitude, String when) {
@@ -30,7 +32,7 @@ public class TPLocation implements Serializable{
 		this.altitude = altitude;
 		this.when = when;
 		this.selected = false;
-		this.type = LocationType.TRAIL;
+		this.typeId = TypeConstants.FIXED_TYPE_TRAIL;
 	}
 
 	public double getLatitude() {
@@ -65,12 +67,12 @@ public class TPLocation implements Serializable{
 		this.when = when;
 	}
 
-	public LocationType getType() {
-		return type;
+	public String getTypeId() {
+		return typeId;
 	}
 
-	public void setType(LocationType type) {
-		this.type = type;
+	public void setTypeId(String typeId) {
+		this.typeId = typeId;
 	}
 
 	public boolean isSelected() {

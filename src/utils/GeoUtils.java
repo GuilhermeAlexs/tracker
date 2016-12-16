@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
-import model.TPLocation2; 
+import model.TPLocation; 
 
 /**
  * Some geo-related utilities 
@@ -79,15 +79,15 @@ public class GeoUtils {
                 pos2.getLatitude(), pos2.getLongitude()); 
     }  
     
-    public static List<TPLocation2> smoothAltitude(List<TPLocation2> path){
+    public static List<TPLocation> smoothAltitude(List<TPLocation> path){
     	if(path.size() < 3)
     		return path;
     	
-    	TPLocation2 before1,before2, curr, after1, after2;
+    	TPLocation before1,before2, curr, after1, after2;
     	double output;
     	
-    	List<TPLocation2> path2 = new ArrayList<TPLocation2>();
-    	TPLocation2 loc;
+    	List<TPLocation> path2 = new ArrayList<TPLocation>();
+    	TPLocation loc;
     	
     	for(int i = 2; i < path.size() - 3; i++){
     		before2 = path.get(i - 2);
@@ -103,7 +103,7 @@ public class GeoUtils {
     			//output = curr.getAltitude();
     		//}
     		
-			loc = new TPLocation2();
+			loc = new TPLocation();
 			loc.setId(curr.getId());
 			loc.setLatitude(curr.getLatitude());
 			loc.setLongitude(curr.getLongitude());
@@ -118,13 +118,13 @@ public class GeoUtils {
     	return path2;
     }
 
-    public static List<TPLocation2> interpolateWithGoogleData(List<TPLocation2> path){
+    public static List<TPLocation> interpolateWithGoogleData(List<TPLocation> path){
     	try {
-    		List<TPLocation2> googleData = ElevationUtil.getElevationFromGoogle(path.subList(0, path.size()/2));
+    		List<TPLocation> googleData = ElevationUtil.getElevationFromGoogle(path.subList(0, path.size()/2));
 			if(googleData == null)
 				return path;
 			
-    		List<TPLocation2> googleData2 = ElevationUtil.getElevationFromGoogle(path.subList(path.size()/2, path.size()));
+    		List<TPLocation> googleData2 = ElevationUtil.getElevationFromGoogle(path.subList(path.size()/2, path.size()));
 			if(googleData2 == null)
 				return path;
 			
@@ -132,11 +132,11 @@ public class GeoUtils {
     		
 
 			
-			List<TPLocation2> interpolated = new ArrayList<TPLocation2>();
-			TPLocation2 currLoc, googleLoc;
+			List<TPLocation> interpolated = new ArrayList<TPLocation>();
+			TPLocation currLoc, googleLoc;
 			
 			for(int i = 0; i < path.size(); i++){
-				TPLocation2 newLoc = new TPLocation2();
+				TPLocation newLoc = new TPLocation();
 				
 				currLoc = path.get(i);
 				googleLoc = googleData.get(i);

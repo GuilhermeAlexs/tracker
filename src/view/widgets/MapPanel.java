@@ -30,7 +30,7 @@ import org.jxmapviewer.viewer.LocalResponseCache;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-import model.TPLocation2;
+import model.TPLocation;
 import view.SelectionAdapter;
 import view.painters.RoutePainter;
 import view.painters.SelectionPainter;
@@ -94,7 +94,7 @@ public class MapPanel extends JXMapViewer{
 		resetMap();
 	}
 	
-	public void drawMarkersAtTheEndsOf(List<TPLocation2> locs){
+	public void drawMarkersAtTheEndsOf(List<TPLocation> locs){
 		Set<SwingWaypoint> waypoints = null;
 		
 		if(locs != null && locs.size() > 0){
@@ -124,7 +124,7 @@ public class MapPanel extends JXMapViewer{
 		}
 	}
 	
-	public void drawPath(List<TPLocation2> path, Color color){
+	public void drawPath(List<TPLocation> path, Color color){
 		painters.add(new RoutePainter(path, color));
 	}
 	
@@ -136,20 +136,20 @@ public class MapPanel extends JXMapViewer{
 	public void clear(){
 		removeAll();
 		painters.clear();
+		commitDrawings();
 	}
 	
 	public void resetMap(){
-		removeAll();
-		setOverlayPainter(null);
+		clear();
 		GeoPosition initPos = new GeoPosition(-15,-40);
 		setZoom(16);
 		setAddressLocation(initPos);
 	}
 	
-	public void fitMap(List<TPLocation2> trail){
+	public void fitMap(List<TPLocation> trail){
 		Set<GeoPosition> pos = new HashSet<GeoPosition>();
 		
-		for(TPLocation2 l: trail){
+		for(TPLocation l: trail){
 			pos.add(new GeoPosition(l.getLatitude(), l.getLongitude()));
 		}
 

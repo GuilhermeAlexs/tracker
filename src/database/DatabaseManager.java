@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import model.StretchType;
-import model.TPLocation2;
+import model.TPLocation;
 
 public class DatabaseManager {
 	private static DatabaseManager INSTANCE;
@@ -132,7 +132,7 @@ public class DatabaseManager {
 		return types;
 	}
 	
-	public void insert(String name, List<TPLocation2> trail){
+	public void insert(String name, List<TPLocation> trail){
 		try (
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("database/" + name + ".mtl"))) {
 			oos.writeObject(trail);
@@ -155,8 +155,8 @@ public class DatabaseManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<TPLocation2> load(String name) {
-		List<TPLocation2> trail = null;
+	public List<TPLocation> load(String name) {
+		List<TPLocation> trail = null;
 	
 		File file = new File("database/" + name + ".mtl");
 		
@@ -167,7 +167,7 @@ public class DatabaseManager {
 			ObjectInputStream ois
 			= new ObjectInputStream(new FileInputStream(file))) {
 
-			trail = (List<TPLocation2>) ois.readObject();
+			trail = (List<TPLocation>) ois.readObject();
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -179,7 +179,7 @@ public class DatabaseManager {
 	public String [] getAllTrailsNames(){
 		String listNames = infoProperties.getProperty("files");
 		
-		if(listNames == null)
+		if(listNames == null || listNames.equals(""))
 			return null;
 		
 		String [] names = listNames.split(";");

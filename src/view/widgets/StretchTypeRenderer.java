@@ -24,6 +24,7 @@ public class StretchTypeRenderer extends JPanel implements ListCellRenderer<Stre
 		add(name);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public Component getListCellRendererComponent(JList list, StretchType value,
 	  int index, boolean isSelected, boolean cellHasFocus) {
 	

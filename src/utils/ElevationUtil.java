@@ -14,18 +14,18 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import model.TPLocation2;
+import model.TPLocation;
 
 public class ElevationUtil {
 	private static final String USER_AGENT = "Mozilla/5.0";
 	private static final String API_KEY = "AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU";
 	
-	public static List<TPLocation2> getElevationFromGoogle(List<TPLocation2> locs) throws IOException{
+	public static List<TPLocation> getElevationFromGoogle(List<TPLocation> locs) throws IOException{
 		String urlBase = "https://maps.googleapis.com/maps/api/elevation/json?locations=";
 		
 		StringBuilder sb = new StringBuilder();
 
-		for(TPLocation2 loc: locs){
+		for(TPLocation loc: locs){
 			sb.append(loc.getLatitude() + "," + loc.getLongitude() + URLEncoder.encode("|", "UTF-8"));	
 		}
 		
@@ -58,11 +58,11 @@ public class ElevationUtil {
 		
 		JSONObject obj2;
 		JSONArray arr = obj.getJSONArray("results");
-		List<TPLocation2> locs2 = new ArrayList<TPLocation2>();
+		List<TPLocation> locs2 = new ArrayList<TPLocation>();
 		
 		for(int i = 0; i < arr.length(); i++){
 			obj2 = arr.getJSONObject(i);
-			TPLocation2 l = new TPLocation2();
+			TPLocation l = new TPLocation();
 			l.setAltitude(obj2.getDouble("elevation"));
 			l.setLatitude(obj2.getJSONObject("location").getDouble("lat"));
 			l.setLongitude(obj2.getJSONObject("location").getDouble("lng"));

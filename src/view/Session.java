@@ -10,7 +10,7 @@ import java.util.Map;
 import database.DatabaseManager;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import model.StretchType;
-import model.TPLocation2;
+import model.TPLocation;
 import model.TypeConstants;
 
 public class Session {
@@ -18,13 +18,13 @@ public class Session {
 	
 	private Kml currentKML;
 	private File currentSourceFile;
-	private List<TPLocation2> currentTrail;
+	private List<TPLocation> currentTrail;
 	
 	private Map<String, StretchType> stretchTypes;
 	private Map<String, Integer> stretchTypesIdMap;
 	
 	private Session(){
-		currentTrail = new ArrayList<TPLocation2>();
+		currentTrail = new ArrayList<TPLocation>();
 		
 		DatabaseManager db = DatabaseManager.getInstance();
 		stretchTypes = db.loadStretchTypes();
@@ -77,11 +77,11 @@ public class Session {
 		this.currentSourceFile = currentSourceFile;
 	}
 
-	public List<TPLocation2> getCurrentTrail() {
+	public List<TPLocation> getCurrentTrail() {
 		return currentTrail;
 	}
 
-	public void setCurrentTrail(List<TPLocation2> currentTrail) {
+	public void setCurrentTrail(List<TPLocation> currentTrail) {
 		this.currentTrail = currentTrail;
 	}
 

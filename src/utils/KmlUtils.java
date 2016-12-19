@@ -44,12 +44,39 @@ public class KmlUtils {
 		return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
 	}
 	
+	public static List<TPLocation> parsePlacemark(Placemark p, KmlParseProgressListener listener){
+		Track track = (Track) p.getGeometry();
+		List<String> coords = track.getCoord();
+		List<TPLocation> locs = new ArrayList<TPLocation>();
+        TPLocation lastLoc = null;
+		int i = 0;
+		
+		for(String c: coords){
+			TPLocation loc = stringToTPLocation(c);
+			
+			if(lastLoc != null && GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()) <= 10)
+				continue;
+			
+			loc.setWhen(track.getWhen().get(i));
+			loc.setId(i);
+			
+			locs.add(loc);
+			i = i + 1;
+			
+			if(listener != null)
+				listener.onParseProgress(i);
+			
+			lastLoc = loc;
+		}
+		
+		return locs;
+	}
+	
 	public static List<TPLocation> getAllPlacemarks(Kml kml, KmlParseProgressListener listener){
 		Document doc = (Document) kml.getFeature();
         List<Feature> listFeat = doc.getFeature();
         Iterator<Feature> it = listFeat.iterator(); 
         List<TPLocation> locs = new ArrayList<TPLocation>();
-        TPLocation lastLoc = null;
         
         while(it.hasNext()){
         	Feature feat = it.next();
@@ -65,35 +92,43 @@ public class KmlUtils {
         			Feature featFolder = itFolder.next();
         			
         			if(featFolder instanceof Placemark){
-        				Placemark p = (Placemark) featFolder;
-        				Track track = (Track) p.getGeometry();
-        				List<String> coords = track.getCoord();
-
-                		if(listener != null)
-                			listener.onPreParse(coords.size());
-
-        				int i = 0;
-        				for(String c: coords){
-        					TPLocation loc = stringToTPLocation(c);
-        					
-        					if(lastLoc != null && GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()) <= 10)
-        						continue;
-        					
-        					loc.setWhen(track.getWhen().get(i));
-        					loc.setId(i);
-        					
-        					locs.add(loc);
-        					i = i + 1;
-        					
-        					if(listener != null)
-        						listener.onParseProgress(i);
-        					
-        					lastLoc = loc;
-        				}
+        				locs = parsePlacemark((Placemark) featFolder, listener);
         			}
         		}
         	}
         }
+        
+        listener.onParseFinish();
+        
+        return locs;
+	}
+	
+	private static void traverseKml(Feature feat, KmlParseProgressListener listener){
+		if(feat instanceof Folder){
+			Folder folder = (Folder) feat;
+			listener.onParseFolder(folder);
+			Iterator<Feature> it = folder.getFeature().iterator();
+
+			while(it.hasNext())
+				traverseKml(it.next(), listener);
+		}else if(feat instanceof Placemark){
+			listener.onParsePlacemark((Placemark) feat);
+		}
+		
+		return;
+	}
+	
+	public static List<TPLocation> parseKml(Kml kml, KmlParseProgressListener listener){
+		Document doc = (Document) kml.getFeature();
+        List<Feature> listFeat = doc.getFeature();
+        Iterator<Feature> it = listFeat.iterator(); 
+        List<TPLocation> locs = new ArrayList<TPLocation>();
+        
+		if(listener != null)
+			listener.onPreParse(0);
+        
+        while(it.hasNext())
+        	traverseKml(it.next(), listener);
         
         listener.onParseFinish();
         

@@ -23,6 +23,8 @@ public class Session {
 	private Map<String, StretchType> stretchTypes;
 	private Map<String, Integer> stretchTypesIdMap;
 	
+	private boolean openedFromFile = true;
+	
 	private Session(){
 		currentTrail = new ArrayList<TPLocation>();
 		
@@ -99,5 +101,13 @@ public class Session {
 
 	public void setStretchTypesIdMap(Map<String, Integer> stretchTypesIdMap) {
 		this.stretchTypesIdMap = stretchTypesIdMap;
+	}
+
+	public boolean isOpenedFromFile() {
+		return openedFromFile;
+	}
+
+	public void setOpenedFromFile(boolean openedFromFile) {
+		this.openedFromFile = openedFromFile;
 	}
 }

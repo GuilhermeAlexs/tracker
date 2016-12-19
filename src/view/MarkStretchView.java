@@ -14,6 +14,8 @@ import view.listeners.StretchTypeChangeListener;
 import view.widgets.StretchTypeRenderer;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+
 import java.awt.event.ActionListener;
 import java.util.Map;
 import java.awt.event.ActionEvent;
@@ -33,6 +35,7 @@ public class MarkStretchView extends JDialog{
 		this.selEnd = end;
 		
 		setTitle("Tipo de Trecho");
+		setIconImage(new ImageIcon("images/logo.png").getImage());
 		setBounds(100, 100, 300, 260);
 		getContentPane().setLayout(new BorderLayout());
 	    

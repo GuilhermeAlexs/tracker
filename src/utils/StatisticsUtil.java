@@ -302,30 +302,34 @@ public class StatisticsUtil {
 	}
 	
 	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int steps){
+		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);
+	}
+	
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, int steps){
 		double speed;
 		double inclination;
-		
+
 		Session session = Session.getInstance();
 		UnivariateInterpolator interpolator = new LoessInterpolator();
 		List<UnivariateFunction> listFunc = new ArrayList<UnivariateFunction>();
 		int numberOfTypes = session.getStretchTypes().size();
-		
+
 		for(int i = 0; i < numberOfTypes; i++){
 			List<Double> inclinations = new ArrayList<Double>();
 			List<Double> speeds = new ArrayList<Double>();
-			
+
 			for(int j = 0; j < avgSpeedTable[i].length; j++){
 				speed = avgSpeedTable[i][j];
-			
+
 				if(speed == 0)
 					continue;
-				
+
 				inclination = (j*steps) - 90;
-				
+
 				inclinations.add(inclination);
 				speeds.add(speed);
 			}
-			
+
 			if(inclinations.size() > 0){
 				try{
 					listFunc.add(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
@@ -337,7 +341,7 @@ public class StatisticsUtil {
 				listFunc.add(null);
 			}
 		}
-		
+
 		return listFunc;
 	}
 

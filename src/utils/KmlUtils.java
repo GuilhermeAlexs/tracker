@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import de.micromata.opengis.kml.v_2_2_0.Coordinate;
 import de.micromata.opengis.kml.v_2_2_0.Document;
 import de.micromata.opengis.kml.v_2_2_0.Feature;
 import de.micromata.opengis.kml.v_2_2_0.Folder;
+import de.micromata.opengis.kml.v_2_2_0.Geometry;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
+import de.micromata.opengis.kml.v_2_2_0.LineString;
+import de.micromata.opengis.kml.v_2_2_0.MultiGeometry;
 import de.micromata.opengis.kml.v_2_2_0.Placemark;
 import de.micromata.opengis.kml.v_2_2_0.gx.Track;
 import model.TPLocation;
@@ -44,20 +48,41 @@ public class KmlUtils {
 		return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
 	}
 	
-	public static List<TPLocation> parsePlacemark(Placemark p, KmlParseProgressListener listener){
-		Track track = (Track) p.getGeometry();
-		List<String> coords = track.getCoord();
+	public static TPLocation coordinateToTPLocation(Coordinate c){
+		return new TPLocation(c.getLatitude(), c.getLongitude(), c.getAltitude());
+	}
+	
+	public static List<TPLocation> parsePlacemark(Placemark p, KmlParseProgressListener listener) throws Exception{
+		Geometry geometry = p.getGeometry();
+		List<Object> coords = new ArrayList<Object>();
+		Track track = null;
+		
+		if(geometry instanceof Track){
+			track = (Track) p.getGeometry();
+			coords.addAll(track.getCoord());
+		}else{
+			MultiGeometry mGeo = (MultiGeometry) p.getGeometry();
+			LineString line = (LineString) mGeo.getGeometry().get(0);
+			coords.addAll(line.getCoordinates());
+		}
+		
 		List<TPLocation> locs = new ArrayList<TPLocation>();
         TPLocation lastLoc = null;
 		int i = 0;
 		
-		for(String c: coords){
-			TPLocation loc = stringToTPLocation(c);
+		for(Object obj: coords){
+			TPLocation loc;
+			if(obj instanceof String)
+				loc = stringToTPLocation((String) obj);
+			else
+				loc = coordinateToTPLocation((Coordinate) obj);
 			
 			if(lastLoc != null && GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()) <= 10)
 				continue;
 			
-			loc.setWhen(track.getWhen().get(i));
+			if(track != null)
+				loc.setWhen(track.getWhen().get(i));
+			
 			loc.setId(i);
 			
 			locs.add(loc);
@@ -72,7 +97,7 @@ public class KmlUtils {
 		return locs;
 	}
 	
-	public static List<TPLocation> getAllPlacemarks(Kml kml, KmlParseProgressListener listener){
+	public static List<TPLocation> getAllPlacemarks(Kml kml, KmlParseProgressListener listener) throws Exception{
 		Document doc = (Document) kml.getFeature();
         List<Feature> listFeat = doc.getFeature();
         Iterator<Feature> it = listFeat.iterator(); 

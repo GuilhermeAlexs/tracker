@@ -45,6 +45,7 @@ public class StretchManager extends JFrame implements ActionListener {
 		
 		setTitle("Gerenciar Trechos");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setIconImage(new ImageIcon("images/logo.png").getImage());
 		setBounds(100, 100, 450, 300);
 
 		contentPane = new JPanel();

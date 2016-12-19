@@ -9,14 +9,16 @@ public class StretchType implements Serializable {
 	private String id;
 	private String name;
 	private Color color;
+	private BehaviorType behaviorType;
 	
 	public StretchType() {
 	}
 
-	public StretchType(String id, String name, Color color) {
+	public StretchType(String id, String name, Color color, BehaviorType behaviorType) {
 		this.id = id;
 		this.name = name;
 		this.color = color;
+		this.behaviorType = behaviorType;
 	}
 
 	public String getId() {
@@ -41,5 +43,13 @@ public class StretchType implements Serializable {
 
 	public void setColor(Color color) {
 		this.color = color;
-	}	
+	}
+
+	public BehaviorType getBehaviorType() {
+		return behaviorType;
+	}
+
+	public void setBehaviorType(BehaviorType behaviorType) {
+		this.behaviorType = behaviorType;
+	}
 }

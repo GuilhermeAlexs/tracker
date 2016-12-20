@@ -113,17 +113,17 @@ public class StatisticsUtil {
 		return stats;
 	}
 
-	private static int getIndexByInterval(double m, int step){
+	private static int getIndexByInterval(double m, double step){
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
 
-	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
+	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
 		
-		double [][] matrix = new double[numberOfTypes][180/steps];
-		double [][] counts = new double[numberOfTypes][180/steps];
+		double [][] matrix = new double[numberOfTypes][(int)(180/steps)];
+		double [][] counts = new double[numberOfTypes][(int)(180/steps)];
 		
 		int index;
 		boolean reset = false;
@@ -179,13 +179,13 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, int steps) throws ParseException{
+	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
 		
-		double [][] matrix = new double[numberOfTypes][180/steps];
-		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][180/steps];
+		double [][] matrix = new double[numberOfTypes][(int)(180/steps)];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
 		
 		int index;
 		boolean reset = false;
@@ -244,7 +244,7 @@ public class StatisticsUtil {
 		return table;
 	}	
 
-	public static double [][] getSimpleAverageSpeedMatrix(int steps) throws ParseException{
+	public static double [][] getSimpleAverageSpeedMatrix(double steps) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		Session session = Session.getInstance();
 		
@@ -267,7 +267,7 @@ public class StatisticsUtil {
 		return MathOperation.divideMatrix(speedTable.getSpeeds(), speedTable.getCounts());
 	}
 
-	public static double [][] getMedianSpeedMatrix(int steps) throws ParseException{
+	public static double [][] getMedianSpeedMatrix(double steps) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		String [] names = db.getAllTrailsNames();
 		Session session = Session.getInstance();
@@ -279,8 +279,8 @@ public class StatisticsUtil {
 		int numberOfTypes = session.getStretchTypes().size();
 		TableOfSpeeds speedTable2;
 		
-		double [][] avgSpeedTable = new double[numberOfTypes][180/steps];
-		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][180/steps];
+		double [][] avgSpeedTable = new double[numberOfTypes][(int)(180/steps)];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
 		
 		for(int i = 0; i < names.length; i++){
 			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
@@ -302,11 +302,11 @@ public class StatisticsUtil {
 		return avgSpeedTable;
 	}
 	
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int steps){
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, double steps){
 		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);
 	}
 	
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, int steps){
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, double steps){
 		double speed;
 		double inclination;
 
@@ -349,7 +349,7 @@ public class StatisticsUtil {
 		return listFunc;
 	}
 
-	public static List<UnivariateFunction> getListOfFunctionsWithPolynomialFitting(double [][] avgSpeedTable, int steps){
+	public static List<UnivariateFunction> getListOfFunctionsWithPolynomialFitting(double [][] avgSpeedTable, double steps){
 		Session session = Session.getInstance();
 		double speed;
 		double inclination;

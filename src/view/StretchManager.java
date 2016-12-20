@@ -17,6 +17,8 @@ import javax.swing.JToolBar;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Map;
 
 import javax.swing.DefaultListModel;
@@ -24,8 +26,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
-public class StretchManager extends JFrame implements ActionListener {
+public class StretchManager extends JFrame implements ActionListener, MouseListener {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String ADD_EVT = "add";
@@ -69,6 +72,7 @@ public class StretchManager extends JFrame implements ActionListener {
 		listStretchs = new JList<StretchType>(listModel);
 		listStretchs.setCellRenderer(new StretchTypeRenderer());
 		listStretchs.setBounds(10, 11, 396, 197);
+		listStretchs.addMouseListener(this);
 		JScrollPane scPane = new JScrollPane(listStretchs);
 		contentPane.add(scPane, BorderLayout.CENTER);
 
@@ -143,5 +147,28 @@ public class StretchManager extends JFrame implements ActionListener {
 				dispose();
 				break;
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if(e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)){
+			openStretch(listStretchs.getSelectedValue());
+		}
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
 	}
 }

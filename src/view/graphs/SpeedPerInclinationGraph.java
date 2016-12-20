@@ -39,7 +39,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	private List<UnivariateFunction> listFunctions = null;
 	private int steps;
 	
-	public SpeedPerInclinationGraph(List<UnivariateFunction> data, int steps) {
+	public SpeedPerInclinationGraph(List<UnivariateFunction> data, double steps) {
 		this.listFunctions = data;
 		initGUI();
 	}

@@ -66,7 +66,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 	}
 	
 	private void showGraphXY(){
-		IntervalXYDataset dataset;
+		XYSeriesCollection dataset;
 		
 		if(data != null)
 			dataset = createXYDataset();
@@ -159,7 +159,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 		return null;
 	}
 
-	private IntervalXYDataset createXYDataset() {
+	private XYSeriesCollection createXYDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         double m = 0;
         int total = 180/steps;
@@ -181,7 +181,7 @@ public class SpeedPerInclinationGraph extends JFrame {
         return dataset;
     }
 	
-	private IntervalXYDataset createXYDatasetContinuous() {
+	private XYSeriesCollection createXYDatasetContinuous() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         double v = 0;
         

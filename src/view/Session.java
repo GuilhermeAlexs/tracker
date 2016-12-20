@@ -57,6 +57,7 @@ public class Session {
 	
 	public void updateIdMap(){
 		int mappedIndexType = 0;
+		stretchTypesIdMap.clear();
 		
 		for (Map.Entry<String, StretchType> entry : stretchTypes.entrySet()){
 			stretchTypesIdMap.put(entry.getKey(), mappedIndexType);

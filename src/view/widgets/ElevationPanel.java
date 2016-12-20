@@ -10,6 +10,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +19,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -30,6 +34,7 @@ import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.IntervalMarker;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -37,6 +42,8 @@ import org.jfree.ui.Layer;
 
 import model.Statistics;
 import model.TPLocation;
+import utils.DateUtils;
+import utils.GeoUtils;
 import view.widgets.events.ElevationGraphListener;
 
 public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener{
@@ -63,10 +70,12 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	private List<TPLocation> currentTrail;
 	
 	private ElevationGraphListener elevationGraphListener;
+	private Statistics stats;
 	
-	public ElevationPanel(List<TPLocation> trail){
+	public ElevationPanel(List<TPLocation> trail, Statistics stats){
 		super();
 		
+		this.stats = stats;
 		this.currentTrail = trail;
 		
 		labelDistance = makeStatLabel();
@@ -93,7 +102,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		setLayout(new BorderLayout(0, 0));
 		add(numbersPanel, BorderLayout.NORTH);
 		
-		drawElevationGraph();
+		try {
+			drawElevationGraph();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		
 		add(chartPanel, BorderLayout.CENTER);
 	}
@@ -114,39 +127,77 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		this.currentTrail = currentTrail;
 	}
 
-	public void drawElevationGraph(){
+	public void drawElevationGraph() throws ParseException{
 		XYSeries series = new XYSeries("Profile");
+		XYSeries speedSeries = new XYSeries("Speed");
 		
-		double i = 0;
-		double maxAltitude = -1;
-		double minAltitude = 9000;
+		int i = 1;
+		double dx = 0;
+		double dt = 0;
+		double v = 0;
+		
 		List<TPLocation> locs = currentTrail;
-		TPLocation loc = locs.get(0);
 		Iterator<TPLocation> it = locs.iterator();
 		
-		while(it.hasNext()){
-			
-			if(loc.getAltitude() > maxAltitude)
-				maxAltitude = loc.getAltitude();
-			
-			if(loc.getAltitude() < minAltitude)
-				minAltitude = loc.getAltitude();
+		TPLocation lastLoc =  it.next();
+		TPLocation loc = it.next();
+		double [] indexes = new double[locs.size() - 1];
+		double [] speeds = new double[locs.size() - 1];
+	
+		UnivariateFunction speedFunc;
+		
+		//TODO: para o cálculo do max, é preciso mover a constante 10 para config. do usuário
+		final double base = stats.getMinElevation();
+		final double max = (stats.getMaxElevation() - stats.getMinElevation())/((double)10);
+		boolean justOneMore = true;
+		
+		while(loc != null){
+			if(i < indexes.length){
+				dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude())/1000;
+				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
+				v = base + (max*Math.abs(dx/dt));
+				
+				if(v > 0.5){
+					indexes[i] = i;
+					speeds[i] = v;
+				}
+			}
 
-			series.add(i, loc.getAltitude());
+			series.add(i - 1, lastLoc.getAltitude());
+			lastLoc = loc;
 			
-			loc = it.next();
-			i = i + 1;
+			if(it.hasNext()){
+				loc = it.next();
+				i = i + 1;
+			}else{
+				loc = null;
+			}
+			
 		}
+		
+		UnivariateInterpolator interpolator = new LoessInterpolator();
+		speedFunc = interpolator.interpolate(indexes, speeds);
+		
+		for(int j = 0; j < i; j++){
+			speedSeries.add(j, speedFunc.value(j));
+		}
+		
+        final XYSeriesCollection data = new XYSeriesCollection(speedSeries);
+        data.addSeries(series);
         
-        final XYSeriesCollection data = new XYSeriesCollection(series);
         chart = ChartFactory.createXYLineChart(null,null,null, data,PlotOrientation.VERTICAL,false,true,false);
-
+        
         final XYAreaRenderer rend = new XYAreaRenderer();
-        //rend.setPrecision(50);
 
-        rend.setSeriesItemLabelsVisible(0, false);
-        rend.setSeriesPaint(0, new Color(221, 141, 22));
-        rend.setSeriesStroke(0, new BasicStroke(1.8f));
+        rend.setSeriesItemLabelsVisible(1, false);
+        rend.setSeriesPaint(1, new Color(221, 141, 22));
+        rend.setSeriesStroke(1, new BasicStroke(1.8f));
+        rend.setSeriesOutlinePaint(1, new Color(0, 0, 0, 0));
+        
+        rend.setOutline(true);
+        rend.setSeriesOutlineStroke(0, new BasicStroke(2.5f));
+        rend.setSeriesPaint(0, new Color(0, 0, 0, 0));
+        rend.setSeriesOutlinePaint(0, new Color(0, 0, 150));
         
         XYPlot xyPlot = (XYPlot) chart.getPlot();
 
@@ -158,7 +209,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         domain.setAxisLineVisible(false);
 
         NumberAxis range = (NumberAxis) xyPlot.getRangeAxis();
-        range.setRange(minAltitude, maxAltitude + 10);
+        range.setRange(stats.getMinElevation(), stats.getMaxElevation() + 10);
         range.setTickUnit(new NumberTickUnit(50));
         range.setLabel(null);
         range.setTickLabelsVisible(true);
@@ -170,7 +221,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         chart.setBackgroundPaint(Color.BLACK);
         
         xyPlot.setRenderer(rend);
-        
+               
         selection = new IntervalMarker(0, 0);
         selection.setPaint(new Color(221/3, 0, 0));
         

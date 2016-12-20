@@ -20,6 +20,7 @@ public class Statistics {
 	private double avgInclinationPositive;
 	private double avgInclinationNegative;
 	
+	
 	public Statistics() {
 		super();
 	}

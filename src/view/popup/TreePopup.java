@@ -57,13 +57,15 @@ public class TreePopup extends JPopupMenu implements ActionListener{
 				String newName = JOptionPane.showInputDialog(parent, "Substituir por:", "Renomear", JOptionPane.QUESTION_MESSAGE);
 		        
 				if(newName != null){
-					if(db.contains(newName)){
-						JOptionPane.showMessageDialog(parent, "Esse nome jÃ¡ existe. Escolha outro!", "Erro ao renomear", JOptionPane.ERROR_MESSAGE);
-						return;
+					if(selectedNode.getParent().equals(tree.getDbNode())){
+						if(db.contains(newName)){
+							JOptionPane.showMessageDialog(parent, "Esse nome jÃ¡ existe. Escolha outro!", "Erro ao renomear", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						
+						//TODO: tirar a lógica de banco de dados daqui
+				        db.renameTrail(selectedNode.getUserObject().toString(), newName);
 					}
-					
-					//TODO: tirar a lógica de banco de dados daqui
-			        db.renameTrail(selectedNode.getUserObject().toString(), newName);
 					
 			        selectedNode.setUserObject(newName);
 			        

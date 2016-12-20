@@ -136,8 +136,9 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 				break;
 			case REM_EVT:
 				int indexToRemove = listStretchs.getSelectedIndex();
-				listModel.remove(indexToRemove);
-				session.getStretchTypes().remove(indexToRemove);
+				StretchType stRem = listModel.remove(indexToRemove);
+				session.getStretchTypes().remove(stRem.getId());
+				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
 				break;
 			case SAVE_EVT:
 				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());

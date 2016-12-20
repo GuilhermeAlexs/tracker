@@ -13,6 +13,7 @@ import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
 import database.DatabaseManager;
+import model.BehaviorType;
 import model.Statistics;
 import model.TPLocation;
 import model.TableOfSpeeds;
@@ -313,8 +314,11 @@ public class StatisticsUtil {
 		UnivariateInterpolator interpolator = new LoessInterpolator();
 		List<UnivariateFunction> listFunc = new ArrayList<UnivariateFunction>();
 		int numberOfTypes = session.getStretchTypes().size();
-
+		
 		for(int i = 0; i < numberOfTypes; i++){
+			if(type != -1 && i != type)
+				continue;
+			
 			List<Double> inclinations = new ArrayList<Double>();
 			List<Double> speeds = new ArrayList<Double>();
 
@@ -355,33 +359,40 @@ public class StatisticsUtil {
 		String typeID = null;
 		boolean makePrediction;
 		int numberOfTypes = session.getStretchTypes().size();
-		
+		BehaviorType behaviorType; 
 		for(int i = 0; i < numberOfTypes; i++){
+			typeID = getIdFromIndexType(i);
+			behaviorType = session.getStretchTypes().get(typeID).getBehaviorType();
+	
+			if(behaviorType == BehaviorType.OTHER){
+				listFunc.addAll(getListOfFunctionsWithLoess(avgSpeedTable, i, steps));
+				continue;
+			}
+		
 			WeightedObservedPoints obs = new WeightedObservedPoints();
 			makePrediction = false;
-			
+
 			for(int j = 0; j < avgSpeedTable[i].length; j++){
 				speed = avgSpeedTable[i][j];
-			
+
 				if(speed == 0)
 					continue;
-				
+
 				makePrediction = true;
-				
+
 				inclination = (j*steps) - 90;
-	
+
 				obs.add(inclination,speed);
 			}
-			
+
 			if(makePrediction){
-				typeID = getIdFromIndexType(i);
 				PolynomialCurveFitter fitter;
-				
-				if(typeID.equals(TypeConstants.FIXED_TYPE_ROAD))
+
+				if(behaviorType == BehaviorType.LINEAR)
 					fitter = PolynomialCurveFitter.create(1);
 				else
 					fitter = PolynomialCurveFitter.create(2);
-				
+
 				double[] coeff = fitter.fit(obs.toList());
 				PolynomialFunction func = new PolynomialFunction(coeff);
 				listFunc.add(func);
@@ -389,7 +400,7 @@ public class StatisticsUtil {
 				listFunc.add(null);
 			}
 		}
-		
+
 		return listFunc;
 	}
 	
@@ -400,7 +411,7 @@ public class StatisticsUtil {
 				return entry.getKey();
 			}
 		}
-		
+
 		return null;
 	}
 }

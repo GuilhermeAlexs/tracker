@@ -9,6 +9,7 @@ import java.util.Map;
 
 import database.DatabaseManager;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
+import model.BehaviorType;
 import model.StretchType;
 import model.TPLocation;
 import model.TypeConstants;
@@ -35,11 +36,11 @@ public class Session {
 			stretchTypes = new HashMap<String, StretchType>();
 		
 		if(stretchTypes.size() == 0){
-			stretchTypes.put(TypeConstants.FIXED_TYPE_INVALID, new StretchType(TypeConstants.FIXED_TYPE_INVALID, "Inválido", Color.BLACK));
-			stretchTypes.put(TypeConstants.FIXED_TYPE_TRAIL, new StretchType(TypeConstants.FIXED_TYPE_TRAIL, "Trilha", Color.GREEN));
-			stretchTypes.put(TypeConstants.FIXED_TYPE_ROAD, new StretchType(TypeConstants.FIXED_TYPE_ROAD, "Estrada", Color.GRAY));
-			stretchTypes.put(TypeConstants.FIXED_TYPE_RIVER, new StretchType(TypeConstants.FIXED_TYPE_RIVER, "Rio", Color.BLUE));
-			stretchTypes.put(TypeConstants.FIXED_TYPE_SNOW, new StretchType(TypeConstants.FIXED_TYPE_SNOW, "Neve", new Color(230,230,230)));
+			stretchTypes.put(TypeConstants.FIXED_TYPE_INVALID, new StretchType(TypeConstants.FIXED_TYPE_INVALID, "Inválido", Color.BLACK, BehaviorType.OTHER));
+			stretchTypes.put(TypeConstants.FIXED_TYPE_TRAIL, new StretchType(TypeConstants.FIXED_TYPE_TRAIL, "Trilha", Color.GREEN, BehaviorType.OTHER));
+			stretchTypes.put(TypeConstants.FIXED_TYPE_ROAD, new StretchType(TypeConstants.FIXED_TYPE_ROAD, "Estrada", Color.GRAY, BehaviorType.OTHER));
+			stretchTypes.put(TypeConstants.FIXED_TYPE_RIVER, new StretchType(TypeConstants.FIXED_TYPE_RIVER, "Rio", Color.BLUE, BehaviorType.OTHER));
+			stretchTypes.put(TypeConstants.FIXED_TYPE_SNOW, new StretchType(TypeConstants.FIXED_TYPE_SNOW, "Neve", new Color(230,230,230), BehaviorType.OTHER));
 		}
 		
 		stretchTypesIdMap = new HashMap<String, Integer>();

@@ -123,6 +123,13 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 		if(type != null){
 			fieldName.setText(type.getName());
 			fieldColor.setBackground(type.getColor());
+		
+			if(type.getBehaviorType() == BehaviorType.LINEAR)
+				rdbtnLin.setSelected(true);
+			else if(type.getBehaviorType() == BehaviorType.QUADRATIC)
+				rdbtnQuadratico.setSelected(true);
+			else
+				rdbtnOutro.setSelected(true);
 		}
 	}
 	
@@ -140,7 +147,7 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 
 			if(rdbtnLin.isSelected())
 				behaviorType = BehaviorType.LINEAR;
-			else if(this.rdbtnQuadratico.isSelected())
+			else if(rdbtnQuadratico.isSelected())
 				behaviorType = BehaviorType.QUADRATIC;
 			else
 				behaviorType = BehaviorType.OTHER;
@@ -153,6 +160,14 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 		}else{
 			type.setName(fieldName.getText());
 			type.setColor(fieldColor.getBackground());
+			
+			if(rdbtnLin.isSelected())
+				type.setBehaviorType(BehaviorType.LINEAR);
+			else if(this.rdbtnQuadratico.isSelected())
+				type.setBehaviorType(BehaviorType.QUADRATIC);
+			else
+				type.setBehaviorType(BehaviorType.OTHER);
+
 			list.setModel((DefaultListModel<StretchType>) list.getModel());
 		}
 

@@ -359,7 +359,8 @@ public class StatisticsUtil {
 		String typeID = null;
 		boolean makePrediction;
 		int numberOfTypes = session.getStretchTypes().size();
-		BehaviorType behaviorType; 
+		BehaviorType behaviorType;
+
 		for(int i = 0; i < numberOfTypes; i++){
 			typeID = getIdFromIndexType(i);
 			behaviorType = session.getStretchTypes().get(typeID).getBehaviorType();

@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -15,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -34,7 +37,6 @@ import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.IntervalMarker;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -46,8 +48,11 @@ import utils.DateUtils;
 import utils.GeoUtils;
 import view.widgets.events.ElevationGraphListener;
 
-public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener{
+public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener, ItemListener{
 	private static final long serialVersionUID = 8224184190104138985L;
+	
+	private static final int SPEED_SERIES = 0;
+	private static final int ELEVATION_SERIES = 1;
 	
 	private ChartPanel chartPanel;
 	private JFreeChart chart;
@@ -66,6 +71,10 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	private JLabel labelElevationGainLoss;
 	private JLabel labelInclinationAvg;
 	private JLabel labelInclinationMax;
+	
+	private JCheckBox checkElevation;
+	private JCheckBox checkSpeed;
+	private XYAreaRenderer rend;
 	
 	private List<TPLocation> currentTrail;
 	
@@ -109,6 +118,33 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		}
 		
 		add(chartPanel, BorderLayout.CENTER);
+		
+		JPanel panelControls = new JPanel();
+		panelControls.setBackground(Color.BLACK);
+		panelControls.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		checkElevation = new JCheckBox("Elevação");
+		checkSpeed = new JCheckBox("Velocidade");
+		
+		checkElevation.setForeground(Color.WHITE);
+		checkSpeed.setForeground(Color.WHITE);
+		
+		checkElevation.setBackground(Color.BLACK);
+		checkSpeed.setBackground(Color.BLACK);
+		
+		checkElevation.setFont(checkElevation.getFont().deriveFont(10f));
+		checkSpeed.setFont(checkSpeed.getFont().deriveFont(10f));
+		
+		checkElevation.setSelected(true);
+		checkSpeed.setSelected(true);
+		
+		checkElevation.addItemListener(this);
+		checkSpeed.addItemListener(this);
+		
+		panelControls.add(checkElevation);
+		panelControls.add(checkSpeed);
+
+		add(panelControls, BorderLayout.SOUTH);
 	}
 	
 	public ElevationGraphListener getElevationGraphListener() {
@@ -141,23 +177,26 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		
 		TPLocation lastLoc =  it.next();
 		TPLocation loc = it.next();
-		double [] indexes = new double[locs.size() - 1];
-		double [] speeds = new double[locs.size() - 1];
+		double [] indexes = new double[locs.size()];
+		double [] speeds = new double[locs.size()];
 	
 		UnivariateFunction speedFunc;
 		
 		//TODO: para o cálculo do max, é preciso mover a constante 10 para config. do usuário
 		final double base = stats.getMinElevation();
-		final double max = (stats.getMaxElevation() - stats.getMinElevation())/((double)10);
-		boolean justOneMore = true;
+		final double max = (stats.getMaxElevation() - stats.getMinElevation())/((double)8);
+		boolean speedSeriesOK = true;
+		
+		if(locs.get(0).getWhen() == null || locs.get(0).getWhen().trim().equals(""))
+			speedSeriesOK = false;
 		
 		while(loc != null){
-			if(i < indexes.length){
+			if(speedSeriesOK){
 				dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude())/1000;
 				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
-				v = base + (max*Math.abs(dx/dt));
+				v = base + (1.7*max*Math.abs(dx/dt));
 				
-				if(v > 0.5){
+				if(v > 0.2){
 					indexes[i] = i;
 					speeds[i] = v;
 				}
@@ -170,34 +209,49 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 				loc = it.next();
 				i = i + 1;
 			}else{
+				series.add(i, lastLoc.getAltitude());
 				loc = null;
 			}
+		}
+		
+		i++;
+		
+		XYSeriesCollection data;
+		
+		if(speedSeriesOK){
+			UnivariateInterpolator interpolator = new LoessInterpolator();
+			speedFunc = interpolator.interpolate(indexes, speeds);
 			
+			for(int j = 0; j < i; j++)
+				speedSeries.add(j, speedFunc.value(j));
+	
+	        data = new XYSeriesCollection(speedSeries);
+	        data.addSeries(series);
+		}else{
+			data = new XYSeriesCollection(series);
 		}
-		
-		UnivariateInterpolator interpolator = new LoessInterpolator();
-		speedFunc = interpolator.interpolate(indexes, speeds);
-		
-		for(int j = 0; j < i; j++){
-			speedSeries.add(j, speedFunc.value(j));
-		}
-		
-        final XYSeriesCollection data = new XYSeriesCollection(speedSeries);
-        data.addSeries(series);
         
         chart = ChartFactory.createXYLineChart(null,null,null, data,PlotOrientation.VERTICAL,false,true,false);
         
-        final XYAreaRenderer rend = new XYAreaRenderer();
+        rend = new XYAreaRenderer();
 
-        rend.setSeriesItemLabelsVisible(1, false);
-        rend.setSeriesPaint(1, new Color(221, 141, 22));
-        rend.setSeriesStroke(1, new BasicStroke(1.8f));
-        rend.setSeriesOutlinePaint(1, new Color(0, 0, 0, 0));
-        
-        rend.setOutline(true);
-        rend.setSeriesOutlineStroke(0, new BasicStroke(2.5f));
-        rend.setSeriesPaint(0, new Color(0, 0, 0, 0));
-        rend.setSeriesOutlinePaint(0, new Color(0, 0, 150));
+
+        if(speedSeriesOK){
+            rend.setSeriesItemLabelsVisible(ELEVATION_SERIES, false);
+            rend.setSeriesPaint(ELEVATION_SERIES, new Color(221, 141, 22));
+            rend.setSeriesStroke(ELEVATION_SERIES, new BasicStroke(1.8f));
+            rend.setSeriesOutlinePaint(ELEVATION_SERIES, new Color(0, 0, 0, 0));
+            
+	        rend.setOutline(true);
+	        rend.setSeriesOutlineStroke(SPEED_SERIES, new BasicStroke(1.5f));
+	        rend.setSeriesPaint(SPEED_SERIES, new Color(163, 194, 224, 90));
+	        rend.setSeriesOutlinePaint(SPEED_SERIES, new Color(163, 194, 224));
+        }else{
+            rend.setSeriesItemLabelsVisible(0, false);
+            rend.setSeriesPaint(0, new Color(221, 141, 22));
+            rend.setSeriesStroke(0, new BasicStroke(1.8f));
+            rend.setSeriesOutlinePaint(0, new Color(0, 0, 0, 0));
+        }
         
         XYPlot xyPlot = (XYPlot) chart.getPlot();
 
@@ -209,7 +263,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         domain.setAxisLineVisible(false);
 
         NumberAxis range = (NumberAxis) xyPlot.getRangeAxis();
-        range.setRange(stats.getMinElevation(), stats.getMaxElevation() + 10);
+        range.setRange(stats.getMinElevation(), stats.getMaxElevation() + 50);
         range.setTickUnit(new NumberTickUnit(50));
         range.setLabel(null);
         range.setTickLabelsVisible(true);
@@ -272,8 +326,8 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		if(!foreground)
 			xyPlot.addDomainMarker(stretchMarker, Layer.BACKGROUND);
 		else{
-			stretchMarker.setAlpha(0.88f);
-			xyPlot.addDomainMarker(stretchMarker, Layer.FOREGROUND);
+			stretchMarker.setAlpha(1f);
+			xyPlot.addDomainMarker(stretchMarker, Layer.BACKGROUND);
 		}
 	}
 	
@@ -379,5 +433,18 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 
 	@Override
 	public void mouseExited(MouseEvent e) {
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		if(checkElevation.isSelected())
+			rend.setSeriesVisible(ELEVATION_SERIES, true);
+		else
+			rend.setSeriesVisible(ELEVATION_SERIES, false);
+		
+		if(checkSpeed.isSelected())
+			rend.setSeriesVisible(SPEED_SERIES, true);
+		else
+			rend.setSeriesVisible(SPEED_SERIES, false);
 	}
 }

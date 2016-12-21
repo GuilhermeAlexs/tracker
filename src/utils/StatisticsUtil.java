@@ -11,9 +11,11 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import database.DatabaseManager;
 import model.BehaviorType;
+import model.LinearFunction;
 import model.Statistics;
 import model.TPLocation;
 import model.TableOfSpeeds;
@@ -227,8 +229,12 @@ public class StatisticsUtil {
 				m = -90;
 			
 			index = getIndexByInterval(m, steps);
-			
-			mappedIndexType = idMap.get(lastLoc.getTypeId());
+
+			try{
+				mappedIndexType = idMap.get(lastLoc.getTypeId());
+			}catch (Exception e){
+				mappedIndexType = idMap.get(TypeConstants.FIXED_TYPE_TRAIL);
+			}
 			
 			if(medianFinder[mappedIndexType][index] == null)
 				medianFinder[mappedIndexType][index] = new MedianFinder();
@@ -371,6 +377,7 @@ public class StatisticsUtil {
 			}
 		
 			WeightedObservedPoints obs = new WeightedObservedPoints();
+			SimpleRegression linearObs = new SimpleRegression();
 			makePrediction = false;
 
 			for(int j = 0; j < avgSpeedTable[i].length; j++){
@@ -383,19 +390,24 @@ public class StatisticsUtil {
 
 				inclination = (j*steps) - 90;
 
-				obs.add(inclination,speed);
+				if(behaviorType == BehaviorType.LINEAR)
+					linearObs.addData(inclination,speed);
+				else
+					obs.add(inclination,speed);
 			}
 
 			if(makePrediction){
-				PolynomialCurveFitter fitter;
-
-				if(behaviorType == BehaviorType.LINEAR)
-					fitter = PolynomialCurveFitter.create(1);
-				else
+				UnivariateFunction func;
+				
+				if(behaviorType == BehaviorType.LINEAR){
+					func = new LinearFunction(linearObs);
+				}else{
+					PolynomialCurveFitter fitter;
 					fitter = PolynomialCurveFitter.create(2);
-
-				double[] coeff = fitter.fit(obs.toList());
-				PolynomialFunction func = new PolynomialFunction(coeff);
+					double[] coeff = fitter.fit(obs.toList());
+					func = new PolynomialFunction(coeff);
+				}
+			
 				listFunc.add(func);
 			}else{
 				listFunc.add(null);

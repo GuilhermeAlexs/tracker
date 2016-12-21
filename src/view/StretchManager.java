@@ -12,11 +12,14 @@ import model.StretchType;
 import view.widgets.StretchTypeRenderer;
 
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Map;
@@ -28,7 +31,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-public class StretchManager extends JFrame implements ActionListener, MouseListener {
+public class StretchManager extends JFrame implements ActionListener, MouseListener, KeyListener {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String ADD_EVT = "add";
@@ -73,6 +76,7 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 		listStretchs.setCellRenderer(new StretchTypeRenderer());
 		listStretchs.setBounds(10, 11, 396, 197);
 		listStretchs.addMouseListener(this);
+		listStretchs.addKeyListener(this);
 		JScrollPane scPane = new JScrollPane(listStretchs);
 		contentPane.add(scPane, BorderLayout.CENTER);
 
@@ -125,6 +129,18 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 		dialog.setResizable(false);
 	}
 	
+	private void removeCurrentStretchType(){
+		int ret = JOptionPane.showConfirmDialog(this, "Você está prestes a remover um tipo. Todos os trechos marcados com esse \n"
+				+ "tipo serão automaticamente marcados como tipo TRILHA. Confirma a remoção?", "Remover Tipo", JOptionPane.YES_NO_OPTION);
+
+		if(ret == JOptionPane.YES_OPTION){
+			int indexToRemove = listStretchs.getSelectedIndex();
+			StretchType stRem = listModel.remove(indexToRemove);
+			session.getStretchTypes().remove(stRem.getId());
+			DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
+		}
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		switch(e.getActionCommand()){
@@ -135,12 +151,10 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 				openStretch(listStretchs.getSelectedValue());
 				break;
 			case REM_EVT:
-				int indexToRemove = listStretchs.getSelectedIndex();
-				StretchType stRem = listModel.remove(indexToRemove);
-				session.getStretchTypes().remove(stRem.getId());
-				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
+				removeCurrentStretchType();
 				break;
 			case SAVE_EVT:
+				Session.getInstance().updateIdMap();
 				DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
 				dispose();
 				break;
@@ -171,5 +185,19 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_DELETE)
+			removeCurrentStretchType();
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
 	}
 }

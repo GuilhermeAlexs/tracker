@@ -18,7 +18,7 @@ import model.BehaviorType;
 import model.LinearFunction;
 import model.Statistics;
 import model.TPLocation;
-import model.TableOfSpeeds;
+import model.TableOfValues;
 import model.TypeConstants;
 import view.Session;
 
@@ -119,7 +119,63 @@ public class StatisticsUtil {
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
 
-	public static TableOfSpeeds calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
+	public static TableOfValues calculateRestTimesWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
+		double dx, dh, dt, v, m;
+
+		TPLocation lastLoc = path.get(0);
+
+		double [][] matrix = new double[numberOfTypes][(int)(180/steps)];
+
+		int index;
+		boolean reset = false;
+
+		int mappedIndexType = 0;
+		
+		for(TPLocation loc: path){
+			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
+				reset = true;
+				continue;
+			}
+
+			if(reset){
+				reset = false;
+				lastLoc = loc;
+			}
+
+			if(loc == lastLoc)
+				continue;
+
+			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/(double)1000;
+			dt = ((double)(DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis()))/(double)3600000;
+			v = Math.abs(dx/dt);
+
+			if(v > 0.2){
+				
+				lastLoc = loc;
+				continue;
+			}
+
+
+			index = getIndexByInterval(0, steps);
+
+			try{
+				mappedIndexType = idMap.get(lastLoc.getTypeId());
+			}catch (Exception e){
+				mappedIndexType = idMap.get(TypeConstants.FIXED_TYPE_TRAIL);
+			}
+
+			matrix[mappedIndexType][index] = 1 + matrix[mappedIndexType][index];
+	
+
+			lastLoc = loc;
+		}
+
+		TableOfValues table = new TableOfValues(matrix, null);
+
+		return table;
+	}
+	
+	public static TableOfValues calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
@@ -176,12 +232,12 @@ public class StatisticsUtil {
 			lastLoc = loc;
 		}
 		
-		TableOfSpeeds table = new TableOfSpeeds(matrix, counts);
+		TableOfValues table = new TableOfValues(matrix, counts);
 		
 		return table;
 	}
 	
-	public static TableOfSpeeds calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
+	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
@@ -212,12 +268,14 @@ public class StatisticsUtil {
 			dh = (loc.getAltitude() - lastLoc.getAltitude())/1000;
 			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
 			v = Math.abs(dx/dt);
-
-			if(v < 0.2){
+			
+			if(v < 0){
+				lastLoc = loc;
 				continue;
 			}
 			
-			if(v >= 10){
+			if(v >= 9){
+				lastLoc = loc;
 				continue;
 			}
 
@@ -245,10 +303,11 @@ public class StatisticsUtil {
 			lastLoc = loc;
 		}
 		
-		TableOfSpeeds table = new TableOfSpeeds(matrix, null);
+		TableOfValues table = new TableOfValues(matrix, null);
 		
 		return table;
-	}	
+	}
+	
 
 	public static double [][] getSimpleAverageSpeedMatrix(double steps) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
@@ -261,16 +320,16 @@ public class StatisticsUtil {
 		
 		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
 		int numberOfTypes = session.getStretchTypes().size();
-		TableOfSpeeds speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), stretchTypesIdMap, numberOfTypes, steps);
-		TableOfSpeeds speedTable2;
+		TableOfValues speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), stretchTypesIdMap, numberOfTypes, steps);
+		TableOfValues speedTable2;
 		
 		for(int i = 1; i < names.length; i++){
 			speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
 			speedTable.setCounts(MathOperation.sumMatrix(speedTable.getCounts(), speedTable2.getCounts()));
-			speedTable.setSpeeds(MathOperation.sumMatrix(speedTable.getSpeeds(), speedTable2.getSpeeds()));
+			speedTable.setValues(MathOperation.sumMatrix(speedTable.getValues(), speedTable2.getValues()));
 		}
 		
-		return MathOperation.divideMatrix(speedTable.getSpeeds(), speedTable.getCounts());
+		return MathOperation.divideMatrix(speedTable.getValues(), speedTable.getCounts());
 	}
 
 	public static double [][] getMedianSpeedMatrix(double steps) throws ParseException{
@@ -283,7 +342,7 @@ public class StatisticsUtil {
 		
 		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
 		int numberOfTypes = session.getStretchTypes().size();
-		TableOfSpeeds speedTable2;
+		TableOfValues speedTable2;
 		
 		double [][] avgSpeedTable = new double[numberOfTypes][(int)(180/steps)];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
@@ -293,13 +352,13 @@ public class StatisticsUtil {
 			
 			for(int type = 0; type < numberOfTypes; type++){
 				for(int m = 0; m < (180/steps); m++){
-					if(speedTable2.getSpeeds()[type][m] == 0)
+					if(speedTable2.getValues()[type][m] == 0)
 						continue;
 					
 					if(medianFinder[type][m] == null)
 						medianFinder[type][m] = new MedianFinder();
 					
-					medianFinder[type][m].addNum(speedTable2.getSpeeds()[type][m]);
+					medianFinder[type][m].addNum(speedTable2.getValues()[type][m]);
 					avgSpeedTable[type][m] = medianFinder[type][m].findMedian();
 				}
 			}
@@ -308,12 +367,49 @@ public class StatisticsUtil {
 		return avgSpeedTable;
 	}
 	
+	public static double [][] getMedianRestTimesMatrix(double steps) throws ParseException{
+		DatabaseManager db = DatabaseManager.getInstance();
+		String [] names = db.getAllTrailsNames();
+		Session session = Session.getInstance();
+		
+		if(names == null)
+			return null;
+		
+		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
+		int numberOfTypes = session.getStretchTypes().size();
+		TableOfValues valueTable2;
+		
+		double [][] avgValueTable = new double[numberOfTypes][(int)(180/steps)];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
+		
+		for(int i = 0; i < names.length; i++){
+			valueTable2 = StatisticsUtil.calculateRestTimesWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
+			
+			for(int type = 0; type < numberOfTypes; type++){
+				for(int m = 0; m < (180/steps); m++){
+					if(valueTable2.getValues()[type][m] == 0)
+						continue;
+					
+					if(medianFinder[type][m] == null)
+						medianFinder[type][m] = new MedianFinder();
+					
+					medianFinder[type][m].addNum(valueTable2.getValues()[type][m]);
+					avgValueTable[type][m] = medianFinder[type][m].findMedian();
+				}
+			}
+		}
+		
+		return avgValueTable;
+	}
+	
+	
 	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, double steps){
 		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);
 	}
 	
+	
 	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, double steps){
-		double speed;
+		double value;
 		double inclination;
 
 		Session session = Session.getInstance();
@@ -326,24 +422,24 @@ public class StatisticsUtil {
 				continue;
 			
 			List<Double> inclinations = new ArrayList<Double>();
-			List<Double> speeds = new ArrayList<Double>();
+			List<Double> values = new ArrayList<Double>();
 
 			for(int j = 0; j < avgSpeedTable[i].length; j++){
-				speed = avgSpeedTable[i][j];
+				value = avgSpeedTable[i][j];
 
-				if(speed == 0)
+				if(value == 0)
 					continue;
 
 				inclination = (j*steps) - 90;
 
 				inclinations.add(inclination);
-				speeds.add(speed);
+				values.add(value);
 			}
 
 			if(inclinations.size() > 0){
 				try{
 					listFunc.add(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
-						speeds.stream().mapToDouble(j -> j).toArray()));
+						values.stream().mapToDouble(j -> j).toArray()));
 				}catch(Exception e){
 					listFunc.add(null);
 				}
@@ -355,6 +451,7 @@ public class StatisticsUtil {
 		return listFunc;
 	}
 
+	
 	public static List<UnivariateFunction> getListOfFunctionsWithPolynomialFitting(double [][] avgSpeedTable, double steps){
 		Session session = Session.getInstance();
 		double speed;

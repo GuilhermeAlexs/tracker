@@ -20,7 +20,6 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
@@ -31,27 +30,21 @@ import view.Session;
 
 public class SpeedPerInclinationGraph extends JFrame {
 	private static final long serialVersionUID = 2450136146764792751L;
-	
+
+	private String xLabel;
+	private String yLabel;
+
 	private JPanel contentPane;
 	private ChartPanel chartPanel;
-	
-	private double [][] data = null;
+
 	private List<UnivariateFunction> listFunctions = null;
-	private int steps;
-	
-	public SpeedPerInclinationGraph(List<UnivariateFunction> data, double steps) {
+
+	public SpeedPerInclinationGraph(List<UnivariateFunction> data, double steps, String title, String xLabel, String yLabel) {
 		this.listFunctions = data;
-		initGUI();
-	}
-	
-	public SpeedPerInclinationGraph(double [][] data, int steps) {
-		this.data = data;
+		this.xLabel = xLabel;
+		this.yLabel = yLabel;
 		
-		initGUI();
-	}
-	
-	private void initGUI(){
-		setTitle("Gr�fico de Velocidades");
+		setTitle(title);
 		setIconImage(new ImageIcon("/logo.png").getImage());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -67,11 +60,8 @@ public class SpeedPerInclinationGraph extends JFrame {
 	
 	private void showGraphXY(){
 		XYSeriesCollection dataset;
-		
-		if(data != null)
-			dataset = createXYDataset();
-		else
-			dataset = createXYDatasetContinuous();
+
+		dataset = createXYDatasetContinuous();
 		
 	    final JFreeChart chart = ChartFactory.createXYLineChart(
 	            "XY Series Demo",
@@ -113,10 +103,8 @@ public class SpeedPerInclinationGraph extends JFrame {
 	    	r1.setSeriesStroke(i, new BasicStroke(2.8f));
 	    }
 
-
-
 	    NumberAxis domain = (NumberAxis) plot.getDomainAxis();
-        domain.setLabel("Inclina��o");
+        domain.setLabel(xLabel);
         domain.setLabelPaint(new Color(200,200,200));
         domain.setLabelFont(domain.getTickLabelFont().deriveFont(14.0f));
         domain.setTickLabelsVisible(true);
@@ -125,7 +113,7 @@ public class SpeedPerInclinationGraph extends JFrame {
         domain.setAxisLineVisible(true);
 
         NumberAxis range = (NumberAxis) plot.getRangeAxis();
-        range.setLabel("Velocidade");
+        range.setLabel(yLabel);
         range.setLabelPaint(new Color(200,200,200));
         range.setLabelFont(domain.getTickLabelFont().deriveFont(14.0f));
         range.setTickLabelPaint(Color.WHITE);
@@ -149,76 +137,55 @@ public class SpeedPerInclinationGraph extends JFrame {
 	
 	private String getIdFromIndexType(int index){
 	    Session session = Session.getInstance();
-	    
+
 		for (Map.Entry<String, Integer> entry : session.getStretchTypesIdMap().entrySet()){
 			if(entry.getValue() == index){
 				return entry.getKey();
 			}
 		}
-		
+
 		return null;
 	}
-
-	private XYSeriesCollection createXYDataset() {
-        final XYSeriesCollection dataset = new XYSeriesCollection();
-        double m = 0;
-        int total = 180/steps;
-        
-        for(int i = 0; i < 5; i++){
-        	XYSeries series = new XYSeries(i);
-
-	        for(int j = 0; j < total; j++){
-	        	m = ((double)((steps*j) - 90)+((steps*(j+1)) - 90))/(double)2;
-	        	
-	        	if(data[i][j] == 0)
-	        		continue;
-	        	
-	        	series.add(m, data[i][j]);
-	        }
-	        
-	        dataset.addSeries(series);
-        }
-        return dataset;
-    }
 	
 	private XYSeriesCollection createXYDatasetContinuous() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
         double v = 0;
-        
+
         UnivariateFunction function;
 
         Session session = Session.getInstance();
         String id;
-        
+
         for(int i = 0; i < session.getStretchTypes().size(); i++){
         	id = getIdFromIndexType(i);
-        	
+
         	if(id.equals(TypeConstants.FIXED_TYPE_INVALID)){
         		continue;
         	}
-        	
+
         	XYSeries series = new XYSeries(session.getStretchTypes().get(id).getName());
         	function = listFunctions.get(i);
-        	
+
         	if(function != null){        	
-		        for(double m = -90; m <= 90; m++){
+		        for(double m = -90; m <= 90; m = m + 1){
 		        	try{
 		        		v = function.value(m);
-		        		
+
 		        		if(v < 0)
 		        			continue;
-		        		
+
 		        		series.add(m, v);
 		        	}catch(OutOfRangeException e){
-		        		
+
 		        	}
 		        }
         	}else{
         		series.setKey(session.getStretchTypes().get(id).getName() + ":<<!null!>>");
         	}
-    		
+
         	dataset.addSeries(series);
         }
+
         return dataset;
     }
 }

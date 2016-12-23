@@ -5,25 +5,22 @@ import java.net.PasswordAuthentication;
 import java.util.Properties;
 
 public class NetworkUtils {
-	public static String authUser = "c1278491";
-	public static String authPassword = "91769457";
-	
-	public static void useProxy(){
+	public static void useProxy(String address, String port, String user, String password){
 		Properties systemSettings = System.getProperties();
-		systemSettings.put("http.proxyHost", "localhost");
-		systemSettings.put("http.proxyPort", "40080");
+		systemSettings.put("http.proxyHost", address);
+		systemSettings.put("http.proxyPort", port);
 
 		Authenticator.setDefault(
 		   new Authenticator() {
 		      @Override
 		      public PasswordAuthentication getPasswordAuthentication() {
 		         return new PasswordAuthentication(
-		               authUser, authPassword.toCharArray());
+		        		 user, password.toCharArray());
 		      }
 		   }
 		);
 
-		System.setProperty("http.proxyUser", authUser);
-		System.setProperty("http.proxyPassword", authPassword);
+		System.setProperty("http.proxyUser", user);
+		System.setProperty("http.proxyPassword", password);
 	}
 }

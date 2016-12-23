@@ -45,7 +45,12 @@ public class KmlUtils {
 	
 	public static TPLocation stringToTPLocation(String c){
 		String [] coords = c.split(" ");
-		return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
+		
+		if(coords.length == 3)
+			return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]), Double.parseDouble(coords[2]));
+		else
+			return new TPLocation(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]));
+
 	}
 	
 	public static TPLocation coordinateToTPLocation(Coordinate c){

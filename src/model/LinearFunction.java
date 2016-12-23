@@ -14,5 +14,4 @@ public class LinearFunction implements UnivariateFunction{
 	public double value(double x) {
 		return regression.predict(x);
 	}
-
 }

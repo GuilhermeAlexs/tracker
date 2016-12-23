@@ -16,6 +16,7 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import database.DatabaseManager;
 import model.BehaviorType;
 import model.LinearFunction;
+import model.PredictorFunction;
 import model.Statistics;
 import model.TPLocation;
 import model.TableOfValues;
@@ -29,74 +30,66 @@ public class StatisticsUtil {
 
 		double maxElevation = -1;
 		double minElevation = 9000;
-		double avgElevation = 0;
 
 		double elevationGain = 0;
 		double elevationLoss = 0;
 
 		double maxInclinationPositive = 0;
 		double maxInclinationNegative = 0;
-		double avgInclinationPositive = 0;
-		double avgInclinationNegative = 0;
 
 		double dx, dh, m;
 		double length = 0;
-
-		int elevationCount = 0;
-		int inclinationPositiveCount = 0;
-		int inclinationNegativeCount = 0;
-
 		TPLocation lastLoc = path.get(0);
 		boolean reset = false;
+		
+		MedianFinder medIncliPos = new MedianFinder();
+		MedianFinder medIncliNeg = new MedianFinder();
+		MedianFinder medElev = new MedianFinder();
 		
 		for(TPLocation loc: path){
 			if(loc.getTypeId() == TypeConstants.FIXED_TYPE_INVALID){
 				reset = true;
 				continue;
 			}
-			
+
 			if(reset){
 				reset = false;
 				lastLoc = loc;
 			}
-			
+
 			if(loc.getAltitude() > maxElevation)
 				maxElevation = loc.getAltitude(); 
 
 			if(loc.getAltitude() < minElevation)
 				minElevation = loc.getAltitude(); 
 
-			avgElevation = avgElevation + loc.getAltitude();
-			elevationCount++;
+			medElev.addNum(loc.getAltitude());
 
 			if(loc == lastLoc)
 				continue;
 
 			dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude());
 			dh = loc.getAltitude() - lastLoc.getAltitude();
-			
+
 			m = Math.toDegrees(Math.atan(dh/(double)dx));
-			
+
 			inclinations.add(m);
 
 			if(m > 0){
 				elevationGain = elevationGain + dh;
-				avgInclinationPositive = avgInclinationPositive + m;
-				inclinationPositiveCount++;
+				medIncliPos.addNum(m);
 
 				if(m > maxInclinationPositive)
 					maxInclinationPositive = m;
 			}else{
 				elevationLoss = elevationLoss + dh;
-				avgInclinationNegative = avgInclinationNegative + m;
-				inclinationNegativeCount++;
+				medIncliNeg.addNum(m);
 
 				if(m < maxInclinationNegative)
 					maxInclinationNegative = m;
 			}
 
 			length = length + dx;
-
 			lastLoc = loc;
 		}
 
@@ -105,10 +98,10 @@ public class StatisticsUtil {
 		stats.setLength(length);
 		stats.setMaxElevation(maxElevation);
 		stats.setMinElevation(minElevation);
-		stats.setAvgElevation(avgElevation/elevationCount);
+		stats.setAvgElevation(medElev.findMedian());
 		stats.setInclinations(inclinations);
-		stats.setAvgInclinationNegative(avgInclinationNegative/inclinationNegativeCount);
-		stats.setAvgInclinationPositive(avgInclinationPositive/inclinationPositiveCount);
+		stats.setAvgInclinationNegative(medIncliNeg.findMedian());
+		stats.setAvgInclinationPositive(medIncliPos.findMedian());
 		stats.setMaxInclinationNegative(maxInclinationNegative);
 		stats.setMaxInclinationPositive(maxInclinationPositive);
 
@@ -120,7 +113,7 @@ public class StatisticsUtil {
 	}
 
 	public static TableOfValues calculateRestTimesWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
-		double dx, dh, dt, v, m;
+		double dx, dt, v;
 
 		TPLocation lastLoc = path.get(0);
 
@@ -130,7 +123,7 @@ public class StatisticsUtil {
 		boolean reset = false;
 
 		int mappedIndexType = 0;
-		
+
 		for(TPLocation loc: path){
 			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
 				reset = true;
@@ -175,7 +168,7 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static TableOfValues calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
+	public static TableOfValues calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps, double minSpeed, double maxSpeed) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
@@ -207,11 +200,11 @@ public class StatisticsUtil {
 			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
 			v = Math.abs(dx/dt);
 
-			if(v < 0.3 ){
+			if(v < minSpeed ){
 				continue;
 			}
 			
-			if(v >= 10){
+			if(v >= maxSpeed){
 				continue;
 			}
 
@@ -237,7 +230,7 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
+	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps, double minSpeed, double maxSpeed) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
@@ -269,12 +262,12 @@ public class StatisticsUtil {
 			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
 			v = Math.abs(dx/dt);
 			
-			if(v < 0){
+			if(v < minSpeed){
 				lastLoc = loc;
 				continue;
 			}
 			
-			if(v >= 9){
+			if(v >= maxSpeed){
 				lastLoc = loc;
 				continue;
 			}
@@ -309,7 +302,7 @@ public class StatisticsUtil {
 	}
 	
 
-	public static double [][] getSimpleAverageSpeedMatrix(double steps) throws ParseException{
+	public static double [][] getSimpleAverageSpeedMatrix(double steps, double minSpeed, double maxSpeed) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		Session session = Session.getInstance();
 		
@@ -320,11 +313,11 @@ public class StatisticsUtil {
 		
 		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
 		int numberOfTypes = session.getStretchTypes().size();
-		TableOfValues speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), stretchTypesIdMap, numberOfTypes, steps);
+		TableOfValues speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 		TableOfValues speedTable2;
 		
 		for(int i = 1; i < names.length; i++){
-			speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 			speedTable.setCounts(MathOperation.sumMatrix(speedTable.getCounts(), speedTable2.getCounts()));
 			speedTable.setValues(MathOperation.sumMatrix(speedTable.getValues(), speedTable2.getValues()));
 		}
@@ -332,7 +325,7 @@ public class StatisticsUtil {
 		return MathOperation.divideMatrix(speedTable.getValues(), speedTable.getCounts());
 	}
 
-	public static double [][] getMedianSpeedMatrix(double steps) throws ParseException{
+	public static double [][] getMedianSpeedMatrix(double steps, double minSpeed, double maxSpeed) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		String [] names = db.getAllTrailsNames();
 		Session session = Session.getInstance();
@@ -348,7 +341,7 @@ public class StatisticsUtil {
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
 		
 		for(int i = 0; i < names.length; i++){
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 			
 			for(int type = 0; type < numberOfTypes; type++){
 				for(int m = 0; m < (180/steps); m++){
@@ -381,7 +374,7 @@ public class StatisticsUtil {
 		
 		double [][] avgValueTable = new double[numberOfTypes][(int)(180/steps)];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
-		
+
 		for(int i = 0; i < names.length; i++){
 			valueTable2 = StatisticsUtil.calculateRestTimesWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
 			
@@ -389,16 +382,16 @@ public class StatisticsUtil {
 				for(int m = 0; m < (180/steps); m++){
 					if(valueTable2.getValues()[type][m] == 0)
 						continue;
-					
+
 					if(medianFinder[type][m] == null)
 						medianFinder[type][m] = new MedianFinder();
-					
+
 					medianFinder[type][m].addNum(valueTable2.getValues()[type][m]);
 					avgValueTable[type][m] = medianFinder[type][m].findMedian();
 				}
 			}
 		}
-		
+
 		return avgValueTable;
 	}
 	
@@ -407,11 +400,12 @@ public class StatisticsUtil {
 		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);
 	}
 	
-	
 	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, double steps){
 		double value;
 		double inclination;
-
+		double maxIncli = -200;
+		double minIncli = 200;
+		
 		Session session = Session.getInstance();
 		UnivariateInterpolator interpolator = new LoessInterpolator();
 		List<UnivariateFunction> listFunc = new ArrayList<UnivariateFunction>();
@@ -431,15 +425,22 @@ public class StatisticsUtil {
 					continue;
 
 				inclination = (j*steps) - 90;
-
+				
+				if(inclination > maxIncli)
+					maxIncli = inclination;
+				
+				if(inclination < minIncli)
+					minIncli = inclination;
+				
 				inclinations.add(inclination);
 				values.add(value);
 			}
 
 			if(inclinations.size() > 0){
 				try{
-					listFunc.add(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
-						values.stream().mapToDouble(j -> j).toArray()));
+					UnivariateFunction predFunc = new PredictorFunction(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
+							values.stream().mapToDouble(j -> j).toArray()), minIncli, maxIncli);
+					listFunc.add(predFunc);
 				}catch(Exception e){
 					listFunc.add(null);
 				}

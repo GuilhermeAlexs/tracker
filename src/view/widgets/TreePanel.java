@@ -26,6 +26,7 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 	private static final long serialVersionUID = -5777942093127701836L;
 	
 	private final String RENAME = "Renomear...";
+	private final String PREDICT_TIME = "Calcular tempo...";
 	private final String REMOVE = "Excluir";
 	private final String SAVE_IN_DB = "Salvar no Banco de Trilhas";
 
@@ -73,6 +74,10 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 			item.addActionListener(this);
 			menu.add(item);
 		}
+		
+		item = new JMenuItem(PREDICT_TIME);
+		item.addActionListener(this);
+		menu.add(item);
 		
 		item = new JMenuItem(RENAME);
 		item.addActionListener(this);
@@ -287,6 +292,10 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 		        break;
 			case REMOVE:
 				deleteNode(selectedNode);
+				
+				break;
+			case PREDICT_TIME:
+				treePanelListener.onTreeNodePredictRequested(selectedNode.getUserObject(), wasSelectedAimed(selectedNode), wasSelectedInDB(selectedNode));
 				
 				break;
 			case SAVE_IN_DB:

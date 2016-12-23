@@ -42,6 +42,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.Layer;
 
+import model.Configurations;
 import model.Statistics;
 import model.TPLocation;
 import utils.DateUtils;
@@ -181,10 +182,10 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		double [] speeds = new double[locs.size()];
 	
 		UnivariateFunction speedFunc;
-		
-		//TODO: para o cálculo do max, é preciso mover a constante 10 para config. do usuário
+
 		final double base = stats.getMinElevation();
-		final double max = (stats.getMaxElevation() - stats.getMinElevation())/((double)8);
+		final double maxSpeed = Configurations.getInstance().getMaximumSpeed();
+		final double max = (stats.getMaxElevation() - stats.getMinElevation())/maxSpeed;
 		boolean speedSeriesOK = true;
 		
 		if(locs.get(0).getWhen() == null || locs.get(0).getWhen().trim().equals(""))
@@ -235,20 +236,25 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         
         rend = new XYAreaRenderer();
 
-
+        Configurations conf = Configurations.getInstance();
+        
         if(speedSeriesOK){
             rend.setSeriesItemLabelsVisible(ELEVATION_SERIES, false);
-            rend.setSeriesPaint(ELEVATION_SERIES, new Color(221, 141, 22));
+            rend.setSeriesPaint(ELEVATION_SERIES, conf.getElevationGraphColor());
             rend.setSeriesStroke(ELEVATION_SERIES, new BasicStroke(1.8f));
             rend.setSeriesOutlinePaint(ELEVATION_SERIES, new Color(0, 0, 0, 0));
             
 	        rend.setOutline(true);
 	        rend.setSeriesOutlineStroke(SPEED_SERIES, new BasicStroke(1.5f));
-	        rend.setSeriesPaint(SPEED_SERIES, new Color(163, 194, 224, 90));
-	        rend.setSeriesOutlinePaint(SPEED_SERIES, new Color(163, 194, 224));
+	        rend.setSeriesPaint(SPEED_SERIES, conf.getSpeedGraphColor());
+	        
+	        Color outlineColor = new Color(conf.getSpeedGraphColor().getRed(), 
+	        		conf.getSpeedGraphColor().getGreen(), conf.getSpeedGraphColor().getBlue());
+
+	        rend.setSeriesOutlinePaint(SPEED_SERIES, outlineColor);
         }else{
             rend.setSeriesItemLabelsVisible(0, false);
-            rend.setSeriesPaint(0, new Color(221, 141, 22));
+            rend.setSeriesPaint(0, conf.getElevationGraphColor());
             rend.setSeriesStroke(0, new BasicStroke(1.8f));
             rend.setSeriesOutlinePaint(0, new Color(0, 0, 0, 0));
         }

@@ -86,7 +86,7 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 		rdbtnQuadratico.setBounds(10, 201, 140, 23);
 		contentPanel.add(rdbtnQuadratico);
 
-		rdbtnOutro = new JRadioButton("Outro");
+		rdbtnOutro = new JRadioButton("Indefinido");
 		rdbtnOutro.setBounds(10, 228, 140, 23);
 		contentPanel.add(rdbtnOutro);
 
@@ -131,6 +131,8 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 			else
 				rdbtnOutro.setSelected(true);
 		}
+		
+		rdbtnOutro.setSelected(true);
 	}
 	
 	private void save(){

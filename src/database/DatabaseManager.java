@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import model.Configurations;
 import model.StretchType;
 import model.TPLocation;
 
@@ -28,6 +29,38 @@ public class DatabaseManager {
 		return INSTANCE;
 	}
 	
+	public void saveConfigurations(Configurations conf){
+		try (
+			ObjectOutputStream oos =
+				new ObjectOutputStream(new FileOutputStream("database/tracker.conf"))) {
+
+			oos.writeObject(conf);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public Configurations loadConfigurations(){
+		Configurations conf = null;
+
+		File file = new File("database/tracker.conf");
+
+		if(!file.exists())
+			return null;
+
+		try (
+			ObjectInputStream ois
+			= new ObjectInputStream(new FileInputStream("database/tracker.conf"))) {
+
+			conf = (Configurations) ois.readObject();
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return conf;
+	}
+
 	private void saveDatabaseInfo(){
 		try (
 			ObjectOutputStream oos =

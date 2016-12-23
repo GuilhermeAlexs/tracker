@@ -8,12 +8,19 @@ public class TPLocation implements Serializable{
 	private int id;
 	private double latitude;
 	private double longitude;
-	private double altitude;
+	private double altitude = -1;
 	private String typeId;
 	private String when;
 	private boolean selected;
 	
 	public TPLocation() {
+		this.selected = false;
+		this.typeId = TypeConstants.FIXED_TYPE_TRAIL;
+	}
+	
+	public TPLocation(double latitude, double longitude) {
+		this.latitude = latitude;
+		this.longitude = longitude;
 		this.selected = false;
 		this.typeId = TypeConstants.FIXED_TYPE_TRAIL;
 	}

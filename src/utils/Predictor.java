@@ -17,7 +17,9 @@ public class Predictor {
 
 		if(path.get(0).getAltitude() <= 0)
 			path = ElevationUtil.getElevationFromGoogle(path);
-
+		else
+			path = GeoUtils.smoothAltitude(path);
+		
 		TPLocation lastLoc = path.get(0);
 
 		boolean reset = false;

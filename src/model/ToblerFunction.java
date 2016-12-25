@@ -2,6 +2,9 @@ package model;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
+//Simula uma função Tobler usando as interfaces da Apache Math Commons.
+//Dessa forma é possível usar várias funções diferentes (de interpolação,
+//de regressão e esta) dentro de uma mesma lista.
 public class ToblerFunction implements UnivariateFunction{
 	private double modifier;
 	
@@ -19,7 +22,8 @@ public class ToblerFunction implements UnivariateFunction{
 
 	@Override
 	public double value(double x) {
-		//x = Math.tan(Math.toRadians(x));
-		return modifier*6*Math.pow(Math.E,-3.5*Math.abs(x + 0.05));
+		//x = Math.tan(Math.toRadians(x))
+		return modifier*6d*Math.pow(Math.E,-3.5d*Math.abs(x + 0.05d));
 	}
 }
+

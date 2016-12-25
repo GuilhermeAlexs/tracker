@@ -20,7 +20,9 @@ public class Statistics {
 	private double avgInclinationPositive;
 	private double avgInclinationNegative;
 	
-	
+	private double timeInDB;
+	private double timeTobler;
+
 	public Statistics() {
 		super();
 	}
@@ -119,5 +121,21 @@ public class Statistics {
 
 	public void setAvgInclinationNegative(double avgInclinationNegative) {
 		this.avgInclinationNegative = avgInclinationNegative;
+	}
+
+	public double getTimeInDB() {
+		return timeInDB;
+	}
+
+	public void setTimeInDB(double timeInDB) {
+		this.timeInDB = timeInDB;
+	}
+
+	public double getTimeTobler() {
+		return timeTobler;
+	}
+
+	public void setTimeTobler(double timeTobler) {
+		this.timeTobler = timeTobler;
 	}
 }

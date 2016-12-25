@@ -74,7 +74,7 @@ public class DatabaseManager {
 	
 	public void renameTrail(String oldName, String newName){
 		String names = infoProperties.getProperty("files");
-		names = names.replace(oldName, newName);
+		names = names.replace(oldName + ";", newName + ";");
 		File f = new File("database/" + oldName + ".mtl");
 		f.renameTo(new File("database/" + newName + ".mtl"));
 		infoProperties.put("files", names);
@@ -130,7 +130,7 @@ public class DatabaseManager {
 	public boolean contains(String name){
 		String files = infoProperties.getProperty("files");
 		
-		if(files == null || !files.contains(name))
+		if(files == null || !files.contains(name.trim() + ";"))
 			return false;
 		
 		return true;

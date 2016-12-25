@@ -40,4 +40,13 @@ public final class DateUtils {
         calendar.setTime(date);
         return calendar;
     }
+    
+    public static String hourOnlyToFormattedString(double hoursRaw){
+    	double finalBuildTime = hoursRaw;
+    	int hours = (int) finalBuildTime;
+    	int minutes = (int) (finalBuildTime * 60) % 60;
+    	int seconds = (int) (finalBuildTime * (60*60)) % 60;
+
+    	return String.format("%s:%s:%s", hours, minutes, seconds);
+    }
 }

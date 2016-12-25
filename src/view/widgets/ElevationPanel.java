@@ -72,6 +72,8 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	private JLabel labelElevationGainLoss;
 	private JLabel labelInclinationAvg;
 	private JLabel labelInclinationMax;
+	private JLabel labelTimeDB;
+	private JLabel labelTimeTobler;
 	
 	private JCheckBox checkElevation;
 	private JCheckBox checkSpeed;
@@ -120,10 +122,6 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		
 		add(chartPanel, BorderLayout.CENTER);
 		
-		JPanel panelControls = new JPanel();
-		panelControls.setBackground(Color.BLACK);
-		panelControls.setLayout(new FlowLayout(FlowLayout.LEFT));
-		
 		checkElevation = new JCheckBox("Elevação");
 		checkSpeed = new JCheckBox("Velocidade");
 		
@@ -142,10 +140,29 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		checkElevation.addItemListener(this);
 		checkSpeed.addItemListener(this);
 		
-		panelControls.add(checkElevation);
-		panelControls.add(checkSpeed);
+		JPanel bottomNumberPanels = new JPanel();
+		bottomNumberPanels.setLayout(new BorderLayout());
+		
+		labelTimeDB = makeStatLabel();
+		labelTimeTobler = makeStatLabel();
+		
+		JPanel panelTimeNumbers = new JPanel();
+		panelTimeNumbers.setBackground(Color.BLACK);
+		panelTimeNumbers.setLayout(new FlowLayout(FlowLayout.LEFT));
+		panelTimeNumbers.add(labelTimeDB);
+		panelTimeNumbers.add(Box.createRigidArea(new Dimension(5,0)));
+		panelTimeNumbers.add(labelTimeTobler);
+		
+		JPanel panelGraphControls = new JPanel();
+		panelGraphControls.setBackground(Color.BLACK);
+		panelGraphControls.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		panelGraphControls.add(checkElevation);
+		panelGraphControls.add(checkSpeed);
 
-		add(panelControls, BorderLayout.SOUTH);
+		bottomNumberPanels.add(panelTimeNumbers, BorderLayout.CENTER);
+		bottomNumberPanels.add(panelGraphControls, BorderLayout.EAST);
+
+		add(bottomNumberPanels, BorderLayout.SOUTH);
 	}
 	
 	public ElevationGraphListener getElevationGraphListener() {
@@ -337,7 +354,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		}
 	}
 	
-	public void showNumberStatisticsPanel(Statistics stats){
+	public void showElevationStatisticsPanel(Statistics stats){
 		final double pC = 100/(double)90; 
 		
 		labelDistance.setText("Distância: " + new DecimalFormat("#.##").format(stats.getLength()/(double)1000) + "km");
@@ -353,6 +370,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		
 		labelInclinationAvg.setText("Incl. Média: " + new DecimalFormat("#.#").format(stats.getAvgInclinationPositive()*pC) + "%  " 
 				+ new DecimalFormat("#.#").format(stats.getAvgInclinationNegative()*pC) + "%");
+	}
+	
+	public void showTimeStatisticsPanel(Statistics stats){
+		labelTimeDB.setText("Tempo: " + DateUtils.hourOnlyToFormattedString(stats.getTimeInDB()));
+		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()));
 	}
 
 	private int getDomainFromClick(ChartMouseEvent e){

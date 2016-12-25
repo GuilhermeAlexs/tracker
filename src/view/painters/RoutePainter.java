@@ -62,6 +62,9 @@ public class RoutePainter implements Painter<JXMapViewer>
 
 		drawRoute(g, map);
 
+		g.setColor(new Color(100,0,0));
+		g.fillRect(0, 0, 200, 200);
+		
 		g.dispose();
 	}
 

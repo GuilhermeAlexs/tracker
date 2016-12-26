@@ -45,8 +45,10 @@ public final class DateUtils {
     	double finalBuildTime = hoursRaw;
     	int hours = (int) finalBuildTime;
     	int minutes = (int) (finalBuildTime * 60) % 60;
-    	int seconds = (int) (finalBuildTime * (60*60)) % 60;
-
-    	return String.format("%s:%s:%s", hours, minutes, seconds);
+    	
+    	if(minutes >= 10)
+    		return String.format("%s:%s", hours, minutes);
+    	else
+    		return String.format("%s:0%s", hours, minutes);
     }
 }

@@ -23,7 +23,7 @@ public class ToblerFunction implements UnivariateFunction{
 	@Override
 	public double value(double x) {
 		//x = Math.tan(Math.toRadians(x))
-		return modifier*6d*Math.pow(Math.E,-3.5d*Math.abs(x + 0.05d));
+		return 4.5*Math.pow(Math.E,-3.5d*Math.abs(x + 0.05d));
 	}
 }
 

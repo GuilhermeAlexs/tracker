@@ -83,25 +83,32 @@ public class GeoUtils {
     	if(path.size() < 3)
     		return path;
     	
-    	TPLocation before1,before2, curr, after1, after2;
+    	TPLocation before1, curr, after1;
     	double output;
     	
     	List<TPLocation> path2 = new ArrayList<TPLocation>();
     	TPLocation loc;
     	
-    	for(int i = 2; i < path.size() - 3; i++){
-    		before2 = path.get(i - 2);
-    		before1 = path.get(i - 1);
-    		curr = path.get(i);
-    		after1 = path.get(i + 1);
-    		after2 = path.get(i + 2);
+    	
+    	for(int i = 0; i < path.size() - 1; i++){
+    		MedianFinder med = new MedianFinder();
     		
-    		//if(GeoUtils.computeDistance(before.getLatitude(), before.getLongitude(), after.getLatitude(), after.getLongitude()) <= 30){
-    			output = (before1.getAltitude() + after1.getAltitude())/(double)2;
-    			//output = output + 0.4 * (curr.getAltitude() - output);
-    		//}else{
-    			//output = curr.getAltitude();
-    		//}
+    		if(i == 0)
+    			before1 = path.get(0);
+    		else
+    			before1 = path.get(i - 1);
+    		
+    		curr = path.get(i);
+    		
+    		if(i == path.size() - 1)
+    			after1 = path.get(path.size() - 1);
+    		else
+    			after1 = path.get(i + 1);
+    		
+    		med.addNum(before1.getAltitude());
+    		med.addNum(curr.getAltitude());
+    		med.addNum(after1.getAltitude());
+    		//output = (before1.getAltitude() + curr.getAltitude() + after1.getAltitude())/(double)3;
     		
 			loc = new TPLocation();
 			loc.setId(curr.getId());
@@ -110,7 +117,7 @@ public class GeoUtils {
 			loc.setSelected(curr.isSelected());
 			loc.setTypeId(curr.getTypeId());
 			loc.setWhen(curr.getWhen());
-			loc.setAltitude(output);
+			loc.setAltitude(med.findMedian());
 			
 			path2.add(loc);
     	}

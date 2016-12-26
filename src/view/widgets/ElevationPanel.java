@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -17,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -49,7 +52,7 @@ import utils.DateUtils;
 import utils.GeoUtils;
 import view.widgets.events.ElevationGraphListener;
 
-public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener, ItemListener{
+public class ElevationPanel extends JPanel implements ChartMouseListener, MouseListener, ItemListener, ActionListener{
 	private static final long serialVersionUID = 8224184190104138985L;
 	
 	private static final int SPEED_SERIES = 0;
@@ -74,7 +77,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	private JLabel labelInclinationMax;
 	private JLabel labelTimeDB;
 	private JLabel labelTimeTobler;
-	
+	private JButton calculateTime;
 	private JCheckBox checkElevation;
 	private JCheckBox checkSpeed;
 	private XYAreaRenderer rend;
@@ -90,11 +93,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		this.stats = stats;
 		this.currentTrail = trail;
 		
-		labelDistance = makeStatLabel();
-		labelElevation = makeStatLabel();
-		labelElevationGainLoss = makeStatLabel();
-		labelInclinationAvg = makeStatLabel();
-		labelInclinationMax = makeStatLabel();
+		labelDistance = makeStatLabel("");
+		labelElevation = makeStatLabel("");
+		labelElevationGainLoss = makeStatLabel("");
+		labelInclinationAvg = makeStatLabel("");
+		labelInclinationMax = makeStatLabel("");
 		
 		JPanel numbersPanel = new JPanel();
 		numbersPanel.setOpaque(true);
@@ -113,13 +116,13 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		
 		setLayout(new BorderLayout(0, 0));
 		add(numbersPanel, BorderLayout.NORTH);
-		
+    	
 		try {
 			drawElevationGraph();
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		
+
 		add(chartPanel, BorderLayout.CENTER);
 		
 		checkElevation = new JCheckBox("Elevação");
@@ -141,10 +144,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		checkSpeed.addItemListener(this);
 		
 		JPanel bottomNumberPanels = new JPanel();
+		bottomNumberPanels.setBackground(Color.BLACK);
 		bottomNumberPanels.setLayout(new BorderLayout());
-		
-		labelTimeDB = makeStatLabel();
-		labelTimeTobler = makeStatLabel();
+
+		labelTimeDB = makeStatLabel("Tempo: ----");
+		labelTimeTobler = makeStatLabel("Tempo Tobler: ----");
 		
 		JPanel panelTimeNumbers = new JPanel();
 		panelTimeNumbers.setBackground(Color.BLACK);
@@ -152,6 +156,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		panelTimeNumbers.add(labelTimeDB);
 		panelTimeNumbers.add(Box.createRigidArea(new Dimension(5,0)));
 		panelTimeNumbers.add(labelTimeTobler);
+		
+		calculateTime = new JButton("Calcular Tempo");
+		calculateTime.addActionListener(this);
+		panelTimeNumbers.add(Box.createRigidArea(new Dimension(5,0)));
+		panelTimeNumbers.add(calculateTime);
 		
 		JPanel panelGraphControls = new JPanel();
 		panelGraphControls.setBackground(Color.BLACK);
@@ -281,7 +290,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
         domain.setLabel(null);
         domain.setRange(0.00, i);
-        domain.setTickUnit(new NumberTickUnit(100));
+        domain.setTickUnit(new NumberTickUnit(50));
         domain.setTickLabelsVisible(false);
         domain.setAxisLineVisible(false);
 
@@ -315,11 +324,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         chartPanel.addMouseListener(this);
 	}
 	
-	private JLabel makeStatLabel(){
+	private JLabel makeStatLabel(String text){
 		JLabel label = new JLabel();
 		label.setForeground(Color.WHITE);
 		label.setFont(label.getFont().deriveFont(10f));
-		
+		label.setText(text);
 		return label;
 	}
 	
@@ -377,9 +386,9 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()));
 	}
 
-	private int getDomainFromClick(ChartMouseEvent e){
+	private int getDomainFromMouse(ChartMouseEvent e){
 		int x;
-		
+
 		if(e.getEntity() instanceof XYItemEntity){
 			XYItemEntity ce = (XYItemEntity) e.getEntity();
 			x = (int) ce.getDataset().getX(ce.getSeriesIndex(),  ce.getItem()).doubleValue();
@@ -402,12 +411,12 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 
 		if(firstClick){ //Usuï¿½rio deu o primeiro click
 			escapeMouseMoveEvent = false;
-			selStart = getDomainFromClick(e);
+			selStart = getDomainFromMouse(e);
 			selEnd = selStart;
 		}else{
 			escapeMouseLeftClickEvent = true;
 			escapeMouseMoveEvent = true; //Impede que movimentos do mouse apaguem a seleï¿½ï¿½o atual
-			selEnd = getDomainFromClick(e);
+			selEnd = getDomainFromMouse(e);
 			
 			elevationGraphListener.onGraphSelectionFinished(selStart, selEnd);
 		}
@@ -420,7 +429,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		if(escapeMouseMoveEvent)
 			return;
 		
-		selEnd = getDomainFromClick(e);
+		selEnd = getDomainFromMouse(e);
 		
 		if(firstClick){
 			elevationGraphListener.onGraphSelectionMoving(selEnd, selEnd);
@@ -474,5 +483,10 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 			rend.setSeriesVisible(SPEED_SERIES, true);
 		else
 			rend.setSeriesVisible(SPEED_SERIES, false);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		elevationGraphListener.onGraphPredictTimeRequested();
 	}
 }

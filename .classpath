@@ -35,5 +35,11 @@
 	<classpathentry kind="lib" path="lib/orsonpdf-1.6-eval.jar"/>
 	<classpathentry kind="lib" path="lib/servlet.jar"/>
 	<classpathentry kind="lib" path="lib/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/jcert.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/jnet.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/jsse.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/google-maps-services-0.1.17.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/okhttp-3.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/User/workspace eclipse/Tracker/Tracker/lib/okio-1.11.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

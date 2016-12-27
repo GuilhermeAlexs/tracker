@@ -1,74 +1,48 @@
 package utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import com.google.maps.ElevationApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.ElevationResult;
+import com.google.maps.model.LatLng;
 
 import model.TPLocation;
 
-public class ElevationUtil {
-	private static final String USER_AGENT = "Mozilla/5.0";
-	private static final String API_KEY = "AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU";
-	
+public class ElevationUtil {	
 	public static List<TPLocation> getElevationFromGoogle(List<TPLocation> locs) throws IOException{
-		String urlBase = "https://maps.googleapis.com/maps/api/elevation/json?locations=";
-		
-		StringBuilder sb = new StringBuilder();
 
-		for(TPLocation loc: locs){
-			sb.append(loc.getLatitude() + "," + loc.getLongitude() + URLEncoder.encode("|", "UTF-8"));	
-		}
-		
-		sb.deleteCharAt(sb.length() - 1);
-		sb.deleteCharAt(sb.length() - 1);
-		sb.deleteCharAt(sb.length() - 1);
-		String urlStr = urlBase.concat(sb.toString()).concat("&key=" + API_KEY);
-		
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpGet request = new HttpGet(urlStr);
-		request.addHeader("User-Agent", USER_AGENT);
-		HttpResponse response = client.execute(request);
-			
-		if(response.getStatusLine().getStatusCode() != 200)
-			return null;
-		
-		BufferedReader rd = new BufferedReader(
-				new InputStreamReader(response.getEntity().getContent()));
+	      try {
+	    	
+	    	LatLng [] locsReq = new LatLng[locs.size()];
+	    	TPLocation currLoc;
+	    	
+	    	for(int i = 0; i < locs.size(); i++){
+	    		currLoc = locs.get(i);
+	    		locsReq[i] = new LatLng(currLoc.getLatitude(), currLoc.getLongitude());
+	    	}
+	    	
+	    	GeoApiContext ctx = new GeoApiContext();
+	    	ctx.setApiKey("AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU");
 
-		StringBuffer result = new StringBuffer();
-		String resp = "";
-		while ((resp = rd.readLine()) != null) {
-			result.append(resp);
+	    	ElevationResult[] res = ElevationApi.getByPoints(ctx, locsReq).await();
+			List<TPLocation> locs2 = new ArrayList<TPLocation>();
+
+			for(int i = 0; i < res.length; i++){
+				TPLocation l = new TPLocation();
+				l.setAltitude(res[i].elevation);
+				l.setLatitude(res[i].location.lat);
+				l.setLongitude(res[i].location.lng);
+				locs2.add(l);
+			}
+
+			return locs2;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
-		JSONObject obj = new JSONObject(result.toString());
-		
-		if(!obj.getString("status").equals("OK"))
-			return null;
-		
-		JSONObject obj2;
-		JSONArray arr = obj.getJSONArray("results");
-		List<TPLocation> locs2 = new ArrayList<TPLocation>();
-		
-		for(int i = 0; i < arr.length(); i++){
-			obj2 = arr.getJSONObject(i);
-			TPLocation l = new TPLocation();
-			l.setAltitude(obj2.getDouble("elevation"));
-			l.setLatitude(obj2.getJSONObject("location").getDouble("lat"));
-			l.setLongitude(obj2.getJSONObject("location").getDouble("lng"));
-			locs2.add(l);
-		}
-		
-		return locs2;
+		return null;
 	}
 }

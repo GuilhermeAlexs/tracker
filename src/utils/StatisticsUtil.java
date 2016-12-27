@@ -338,7 +338,7 @@ public class StatisticsUtil {
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
 
 		for(int i = 0; i < names.length; i++){
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(GeoUtils.interpolateWithGoogleData(db.load(names[i])), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 
 			for(int type = 0; type < numberOfTypes; type++){
 				for(int m = 0; m < (180/steps); m++){

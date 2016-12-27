@@ -108,7 +108,7 @@ public class GeoUtils {
     		med.addNum(before1.getAltitude());
     		med.addNum(curr.getAltitude());
     		med.addNum(after1.getAltitude());
-    		//output = (before1.getAltitude() + curr.getAltitude() + after1.getAltitude())/(double)3;
+    		output = (before1.getAltitude() + curr.getAltitude() + after1.getAltitude())/(double)3;
     		
 			loc = new TPLocation();
 			loc.setId(curr.getId());
@@ -117,7 +117,7 @@ public class GeoUtils {
 			loc.setSelected(curr.isSelected());
 			loc.setTypeId(curr.getTypeId());
 			loc.setWhen(curr.getWhen());
-			loc.setAltitude(med.findMedian());
+			loc.setAltitude(output);
 			
 			path2.add(loc);
     	}
@@ -127,16 +127,18 @@ public class GeoUtils {
 
     public static List<TPLocation> interpolateWithGoogleData(List<TPLocation> path){
     	try {
-    		List<TPLocation> googleData = ElevationUtil.getElevationFromGoogle(path.subList(0, path.size()/2));
-			if(googleData == null)
-				return path;
-			
-    		List<TPLocation> googleData2 = ElevationUtil.getElevationFromGoogle(path.subList(path.size()/2, path.size()));
-			if(googleData2 == null)
-				return path;
-			
-    		googleData.addAll(googleData2);
     		
+    		int qtd = (int) Math.floor(path.size()/(double)512);
+    		int rest = path.size() % 100;
+    		List<TPLocation> googleData = new ArrayList<TPLocation>();
+    		
+    		for(int i = 0; i < qtd; i = i + 1){
+	    		googleData.addAll(ElevationUtil.getElevationFromGoogle(path.subList(100*i, 100*(i + 1))));
+    		}
+    		
+    		if(rest != 0){
+    			googleData.addAll(ElevationUtil.getElevationFromGoogle(path.subList(path.size() - 100*rest - 1, path.size())));
+    		}
 
 			
 			List<TPLocation> interpolated = new ArrayList<TPLocation>();

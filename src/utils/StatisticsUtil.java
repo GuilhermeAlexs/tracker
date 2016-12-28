@@ -111,59 +111,6 @@ public class StatisticsUtil {
 	private static int getIndexByInterval(double m, double step){
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
-
-	public static TableOfValues calculateRestTimesWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps) throws ParseException{
-		double dx, dt, v;
-
-		TPLocation lastLoc = path.get(0);
-
-		double [][] matrix = new double[numberOfTypes][(int)(180/steps)];
-
-		int index;
-		boolean reset = false;
-
-		int mappedIndexType = 0;
-
-		for(TPLocation loc: path){
-			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
-				reset = true;
-				continue;
-			}
-
-			if(reset){
-				reset = false;
-				lastLoc = loc;
-			}
-
-			if(loc == lastLoc)
-				continue;
-
-			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/(double)1000;
-			dt = ((double)(DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis()))/(double)3600000;
-			v = Math.abs(dx/dt);
-
-			if(v > 0.2){
-				lastLoc = loc;
-				continue;
-			}
-
-			index = getIndexByInterval(0, steps);
-
-			try{
-				mappedIndexType = idMap.get(lastLoc.getTypeId());
-			}catch (Exception e){
-				mappedIndexType = idMap.get(TypeConstants.FIXED_TYPE_TRAIL);
-			}
-
-			matrix[mappedIndexType][index] = 1 + matrix[mappedIndexType][index];
-
-			lastLoc = loc;
-		}
-
-		TableOfValues table = new TableOfValues(matrix, null);
-
-		return table;
-	}
 	
 	public static TableOfValues calculateTableOfSpeeds(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps, double minSpeed, double maxSpeed) throws ParseException{
 		double dx, dh, dt, v, m;
@@ -222,7 +169,7 @@ public class StatisticsUtil {
 			lastLoc = loc;
 		}
 
-		TableOfValues table = new TableOfValues(matrix, counts);
+		TableOfValues table = new TableOfValues(matrix, counts, -1);
 
 		return table;
 	}
@@ -239,7 +186,8 @@ public class StatisticsUtil {
 		boolean reset = false;
 
 		int mappedIndexType = 0;
-
+		double dtAcc = 0;
+		
 		for(TPLocation loc: path){
 			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
 				reset = true;
@@ -260,6 +208,9 @@ public class StatisticsUtil {
 			v = Math.abs(dx/dt);
 
 			if(v < minSpeed){
+				if(dt < 0.25)
+					dtAcc = dt + dtAcc;
+
 				lastLoc = loc;
 				continue;
 			}
@@ -292,9 +243,13 @@ public class StatisticsUtil {
 
 			lastLoc = loc;
 		}
-
-		TableOfValues table = new TableOfValues(matrix, null);
-
+		
+		dt = (DateUtils.toCalendar(path.get(path.size() - 1).getWhen()).getTimeInMillis() - 
+				DateUtils.toCalendar(path.get(0).getWhen()).getTimeInMillis())/(double)3600000;
+		
+		TableOfValues table = new TableOfValues(matrix, null, (double)dtAcc/(double)dt);
+		
+		System.out.println("   Tempo Parado: " + 100*((double)dtAcc/(double)dt) + "%");
 		return table;
 	}
 	
@@ -322,7 +277,7 @@ public class StatisticsUtil {
 		return MathOperation.divideMatrix(speedTable.getValues(), speedTable.getCounts());
 	}
 
-	public static double [][] getMedianSpeedMatrix(double steps, double minSpeed, double maxSpeed) throws ParseException{
+	public static TableOfValues getMedianSpeedMatrix(double steps, double minSpeed, double maxSpeed) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		String [] names = db.getAllTrailsNames();
 		Session session = Session.getInstance();
@@ -336,10 +291,13 @@ public class StatisticsUtil {
 
 		double [][] avgSpeedTable = new double[numberOfTypes][(int)(180/steps)];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
-
+		MedianFinder restProportionMedian = new MedianFinder();
+		
 		for(int i = 0; i < names.length; i++){
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(GeoUtils.interpolateWithGoogleData(db.load(names[i])), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
-
+			System.out.println(names[i] + ":");
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
+			restProportionMedian.addNum(speedTable2.getRestProportion());
+			
 			for(int type = 0; type < numberOfTypes; type++){
 				for(int m = 0; m < (180/steps); m++){
 					if(speedTable2.getValues()[type][m] == 0)
@@ -353,45 +311,11 @@ public class StatisticsUtil {
 				}
 			}
 		}
+		
+		TableOfValues table = new TableOfValues(avgSpeedTable, null, restProportionMedian.findMedian());
 
-		return avgSpeedTable;
+		return table;
 	}
-	
-	public static double [][] getMedianRestTimesMatrix(double steps) throws ParseException{
-		DatabaseManager db = DatabaseManager.getInstance();
-		String [] names = db.getAllTrailsNames();
-		Session session = Session.getInstance();
-
-		if(names == null)
-			return null;
-
-		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
-		int numberOfTypes = session.getStretchTypes().size();
-		TableOfValues valueTable2;
-
-		double [][] avgValueTable = new double[numberOfTypes][(int)(180/steps)];
-		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
-
-		for(int i = 0; i < names.length; i++){
-			valueTable2 = StatisticsUtil.calculateRestTimesWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps);
-
-			for(int type = 0; type < numberOfTypes; type++){
-				for(int m = 0; m < (180/steps); m++){
-					if(valueTable2.getValues()[type][m] == 0)
-						continue;
-
-					if(medianFinder[type][m] == null)
-						medianFinder[type][m] = new MedianFinder();
-
-					medianFinder[type][m].addNum(valueTable2.getValues()[type][m]);
-					avgValueTable[type][m] = medianFinder[type][m].findMedian();
-				}
-			}
-		}
-
-		return avgValueTable;
-	}
-	
 	
 	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, double steps){
 		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);

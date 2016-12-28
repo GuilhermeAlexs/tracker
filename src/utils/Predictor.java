@@ -8,11 +8,12 @@ import java.util.Map;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
 import model.TPLocation;
+import model.TableOfValues;
 import model.ToblerFunction;
 import model.TypeConstants;
 
 public class Predictor {
-	public static double predictTime(List<TPLocation> path, Map<String, Integer> idMap, List<UnivariateFunction> functions) throws ParseException, IOException{
+	public static double predictHikingTime(List<TPLocation> path, Map<String, Integer> idMap, List<UnivariateFunction> functions) throws ParseException, IOException{
 		double dx, dh, m;
 
 		if(path.get(0).getAltitude() <= 0)
@@ -69,5 +70,12 @@ public class Predictor {
 		}
 
 		return time;
+	}
+
+	public static double predictRestTime(List<TPLocation> path, TableOfValues avgTable) throws ParseException{
+		double dt = (DateUtils.toCalendar(path.get(path.size() - 1).getWhen()).getTimeInMillis() - 
+				DateUtils.toCalendar(path.get(0).getWhen()).getTimeInMillis())/(double)3600000;
+
+		return avgTable.getRestProportion()*dt;
 	}
 }

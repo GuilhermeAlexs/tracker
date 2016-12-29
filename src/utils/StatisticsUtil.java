@@ -15,6 +15,7 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import database.DatabaseManager;
 import model.BehaviorType;
+import model.Configurations;
 import model.LinearFunction;
 import model.PredictorFunction;
 import model.Statistics;
@@ -174,19 +175,22 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, double steps, double minSpeed, double maxSpeed) throws ParseException{
+	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, Configurations conf) throws ParseException{
 		double dx, dh, dt, v, m;
 
 		TPLocation lastLoc = path.get(0);
-
-		double [][] matrix = new double[numberOfTypes][(int)(180/steps)];
-		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
+		
+		int sizeIncli = (int)(180/conf.getSteps());
+		double [][] matrix = new double[numberOfTypes][sizeIncli];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][sizeIncli];
 
 		int index;
 		boolean reset = false;
 
 		int mappedIndexType = 0;
 		double dtAcc = 0;
+		double dtTotal = 0;
+		boolean canTakeRestInAccount = true;
 		
 		for(TPLocation loc: path){
 			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
@@ -207,19 +211,26 @@ public class StatisticsUtil {
 			dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
 			v = Math.abs(dx/dt);
 
-			if(v < minSpeed){
-				if(dt < 0.25)
-					dtAcc = dt + dtAcc;
+			if(v < conf.getMinimumSpeed()){
+				if(dt < conf.getRestTime()){
+					if(canTakeRestInAccount){
+						canTakeRestInAccount = false;
+						dtAcc = dt + dtAcc;
+					}
+				}
 
 				lastLoc = loc;
 				continue;
 			}
 
-			if(v >= maxSpeed){
+			canTakeRestInAccount = true;
+
+			if(v >= conf.getMaximumSpeed()){
 				lastLoc = loc;
 				continue;
 			}
 
+			dtTotal = dtTotal + dt;
 			m = Math.toDegrees(Math.atan(((double)dh)/((double)dx)));
 
 			if( m > 90 )
@@ -227,7 +238,7 @@ public class StatisticsUtil {
 			else if( m < -90)
 				m = -90;
 
-			index = getIndexByInterval(m, steps);
+			index = getIndexByInterval(m, conf.getSteps());
 
 			try{
 				mappedIndexType = idMap.get(lastLoc.getTypeId());
@@ -243,13 +254,13 @@ public class StatisticsUtil {
 
 			lastLoc = loc;
 		}
-		
+
 		dt = (DateUtils.toCalendar(path.get(path.size() - 1).getWhen()).getTimeInMillis() - 
 				DateUtils.toCalendar(path.get(0).getWhen()).getTimeInMillis())/(double)3600000;
-		
-		TableOfValues table = new TableOfValues(matrix, null, (double)dtAcc/(double)dt);
-		
-		System.out.println("   Tempo Parado: " + 100*((double)dtAcc/(double)dt) + "%");
+
+		TableOfValues table = new TableOfValues(matrix, null, (double)dtAcc/(double)dtTotal);
+
+		System.out.println("   Tempo Parado: " + 100*((double)dtAcc/(double)dtTotal) + "%");
 		return table;
 	}
 	
@@ -277,7 +288,7 @@ public class StatisticsUtil {
 		return MathOperation.divideMatrix(speedTable.getValues(), speedTable.getCounts());
 	}
 
-	public static TableOfValues getMedianSpeedMatrix(double steps, double minSpeed, double maxSpeed) throws ParseException{
+	public static TableOfValues getMedianSpeedMatrix(Configurations conf) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		String [] names = db.getAllTrailsNames();
 		Session session = Session.getInstance();
@@ -289,17 +300,18 @@ public class StatisticsUtil {
 		int numberOfTypes = session.getStretchTypes().size();
 		TableOfValues speedTable2;
 
-		double [][] avgSpeedTable = new double[numberOfTypes][(int)(180/steps)];
-		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][(int)(180/steps)];
+		int sizeIncli = (int)(180/conf.getSteps());
+		double [][] avgSpeedTable = new double[numberOfTypes][sizeIncli];
+		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][sizeIncli];
 		MedianFinder restProportionMedian = new MedianFinder();
 		
 		for(int i = 0; i < names.length; i++){
 			System.out.println(names[i] + ":");
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, conf);
 			restProportionMedian.addNum(speedTable2.getRestProportion());
 			
 			for(int type = 0; type < numberOfTypes; type++){
-				for(int m = 0; m < (180/steps); m++){
+				for(int m = 0; m < sizeIncli; m++){
 					if(speedTable2.getValues()[type][m] == 0)
 						continue;
 
@@ -317,11 +329,11 @@ public class StatisticsUtil {
 		return table;
 	}
 	
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, double steps){
-		return getListOfFunctionsWithLoess(avgSpeedTable, -1, steps);
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, Configurations conf){
+		return getListOfFunctionsWithLoess(avgSpeedTable, -1, conf);
 	}
 	
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, double steps){
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, Configurations conf){
 		double value;
 		double inclination;
 		double maxIncli = -200;
@@ -345,7 +357,7 @@ public class StatisticsUtil {
 				if(value == 0)
 					continue;
 
-				inclination = (j*steps) - 90;
+				inclination = (j*conf.getSteps()) - 90;
 
 				if(inclination > maxIncli)
 					maxIncli = inclination;
@@ -374,7 +386,7 @@ public class StatisticsUtil {
 	}
 
 
-	public static List<UnivariateFunction> getListOfFunctionsWithPolynomialFitting(double [][] avgSpeedTable, double steps){
+	public static List<UnivariateFunction> getListOfPredictionFunctions(double [][] avgSpeedTable, Configurations conf){
 		Session session = Session.getInstance();
 		double speed;
 		double inclination;
@@ -391,7 +403,7 @@ public class StatisticsUtil {
 			behaviorType = session.getStretchTypes().get(typeID).getBehaviorType();
 
 			if(behaviorType == BehaviorType.OTHER){
-				listFunc.addAll(getListOfFunctionsWithLoess(avgSpeedTable, i, steps));
+				listFunc.addAll(getListOfFunctionsWithLoess(avgSpeedTable, i, conf));
 				continue;
 			}
 
@@ -407,7 +419,7 @@ public class StatisticsUtil {
 
 				makePrediction = true;
 
-				inclination = (j*steps) - 90;
+				inclination = (j*conf.getSteps()) - 90;
 
 				if(behaviorType == BehaviorType.LINEAR)
 					linearObs.addData(inclination,speed);

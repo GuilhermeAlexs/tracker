@@ -130,8 +130,10 @@ public class AddEditStretchView extends JDialog implements ActionListener, Mouse
 				rdbtnQuadratico.setSelected(true);
 			else
 				rdbtnOutro.setSelected(true);
+			
+			return;
 		}
-		
+
 		rdbtnOutro.setSelected(true);
 	}
 	

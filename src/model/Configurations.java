@@ -12,6 +12,7 @@ public class Configurations implements Serializable{
 	
 	private double minimumSpeed;
 	private double maximumSpeed;
+	private double restTime;
 	private double steps;
 	private Color elevationGraphColor;
 	private Color speedGraphColor;
@@ -21,10 +22,11 @@ public class Configurations implements Serializable{
 	private String proxyPassword = "";
 	private String proxyPort = "";
 	
-	private Configurations(double minimumSpeed, double maximumSpeed, double steps, Color elevationGraphColor,
+	private Configurations(double minimumSpeed, double maximumSpeed, double restTime, double steps, Color elevationGraphColor,
 			Color speedGraphColor, Color selectionColor) {
 		this.minimumSpeed = minimumSpeed;
 		this.maximumSpeed = maximumSpeed;
+		this.restTime = restTime;
 		this.steps = steps;
 		this.elevationGraphColor = elevationGraphColor;
 		this.speedGraphColor = speedGraphColor;
@@ -36,19 +38,19 @@ public class Configurations implements Serializable{
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
 			
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(0.2, 10, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
+				INSTANCE = new Configurations(0.2, 10, 0.25, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
 		}
 		
 		return INSTANCE;
 	}
 	
-	public static Configurations getInstance(double minimumSpeed, double maximumSpeed, double steps, Color elevationGraphColor,
+	public static Configurations getInstance(double minimumSpeed, double maximumSpeed, double restTime, double steps, Color elevationGraphColor,
 			Color speedGraphColor, Color selectionColor){
 		if(INSTANCE == null){
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
 			
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(0.2, 10, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
+				INSTANCE = new Configurations(minimumSpeed, maximumSpeed, restTime, steps, elevationGraphColor, speedGraphColor, selectionColor);
 		}
 		
 		return INSTANCE;
@@ -68,6 +70,14 @@ public class Configurations implements Serializable{
 
 	public void setMaximumSpeed(double maximumSpeed) {
 		this.maximumSpeed = maximumSpeed;
+	}
+	
+	public double getRestTime() {
+		return restTime;
+	}
+
+	public void setRestTime(double restTime) {
+		this.restTime = restTime;
 	}
 
 	public double getSteps() {

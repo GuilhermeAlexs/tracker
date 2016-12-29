@@ -7,20 +7,23 @@ import java.util.Map;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
+import model.Configurations;
 import model.TPLocation;
 import model.TableOfValues;
 import model.ToblerFunction;
 import model.TypeConstants;
 
 public class Predictor {
-	public static double predictHikingTime(List<TPLocation> path, Map<String, Integer> idMap, List<UnivariateFunction> functions) throws ParseException, IOException{
+	private static double predictHikingTime(List<TPLocation> path, Map<String, Integer> idMap, List<UnivariateFunction> functions, boolean shouldSmooth, Configurations conf) throws ParseException, IOException{
 		double dx, dh, m;
 
 		if(path.get(0).getAltitude() <= 0)
 			path = ElevationUtil.getElevationFromGoogle(path);
-		else
-			path = GeoUtils.smoothAltitude(path);
-		
+		else{
+			if(shouldSmooth)
+				path = GeoUtils.smoothAltitude(path);
+		}
+
 		TPLocation lastLoc = path.get(0);
 
 		boolean reset = false;
@@ -44,6 +47,7 @@ public class Predictor {
 
 			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/1000;
 			dh = (loc.getAltitude() - lastLoc.getAltitude())/1000;
+			
 			m = Math.toDegrees(Math.atan(((double)dh)/((double)dx)));
 
 			if( m > 90 )
@@ -62,7 +66,7 @@ public class Predictor {
 			if(f != null){
 				if(f instanceof ToblerFunction)
 					m = (double)dh/(double)dx;
-				
+
 				time = time + (dx/f.value(m));
 			}
 
@@ -72,10 +76,9 @@ public class Predictor {
 		return time;
 	}
 
-	public static double predictRestTime(List<TPLocation> path, TableOfValues avgTable) throws ParseException{
-		double dt = (DateUtils.toCalendar(path.get(path.size() - 1).getWhen()).getTimeInMillis() - 
-				DateUtils.toCalendar(path.get(0).getWhen()).getTimeInMillis())/(double)3600000;
+	public static double predict(List<TPLocation> path, TableOfValues avgTable, Map<String, Integer> idMap, List<UnivariateFunction> functions, boolean shouldSmooth, Configurations conf) throws ParseException, IOException{
+		double hikingTime = predictHikingTime(path, idMap, functions, shouldSmooth, conf);
 
-		return avgTable.getRestProportion()*dt;
+		return hikingTime + avgTable.getRestProportion()*hikingTime;
 	}
 }

@@ -41,12 +41,14 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 	private JTextField fieldPassword;
 	private JTextField fieldAddress;
 	private JTextField fieldPort;
+	private JSpinner spnRestTime;
 
 	private void initializeFields(){
 		Configurations conf = Configurations.getInstance();
 
 		spnMinimumSpeed.setValue(conf.getMinimumSpeed());
 		spnMaximumSpeed.setValue(conf.getMaximumSpeed());
+		spnRestTime.setValue(conf.getRestTime()*60);
 		spnSteps.setValue(conf.getSteps());
 
 		panelElevationColor.setBackground(conf.getElevationGraphColor());
@@ -99,6 +101,14 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 		spnSteps = new JSpinner(new SpinnerNumberModel(1d, 1d, 10d, 1d));
 		spnSteps.setBounds(12, 168, 120, 20);
 		panel.add(spnSteps);
+		
+		JLabel lblTempoDeDescanso = new JLabel("Tempo de Descanso:");
+		lblTempoDeDescanso.setBounds(288, 23, 169, 15);
+		panel.add(lblTempoDeDescanso);
+		
+		spnRestTime = new JSpinner(new SpinnerNumberModel(1d, 1d, 60d, 1d));
+		spnRestTime.setBounds(288, 50, 120, 20);
+		panel.add(spnRestTime);
 
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("Aparência", null, panel_2, null);
@@ -200,6 +210,7 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 
 				Double min = (Double) spnMinimumSpeed.getValue();
 				Double max = (Double) spnMaximumSpeed.getValue();
+				Double restTime = (Double) spnRestTime.getValue();
 				Double steps = (Double) spnSteps.getValue();
 
 				Color elevColor = panelElevationColor.getBackground();
@@ -219,6 +230,9 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 
 				if(steps != null && min > 0)
 					conf.setSteps(steps);
+
+				if(restTime != null && restTime > 0)
+					conf.setRestTime(restTime/60);
 
 				conf.setElevationGraphColor(elevColor);
 				conf.setSpeedGraphColor(speedColor);

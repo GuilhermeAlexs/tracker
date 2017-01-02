@@ -57,6 +57,17 @@ public class KmlUtils {
 		return new TPLocation(c.getLatitude(), c.getLongitude(), c.getAltitude());
 	}
 	
+	public static List<Coordinate> tpLocationsToCoordinates(List<TPLocation> locs){
+		List<Coordinate> coords = new ArrayList<Coordinate>();
+		
+		for(TPLocation loc: locs){
+			Coordinate coord = new Coordinate(loc.getLongitude(), loc.getLatitude(), loc.getAltitude());
+			coords.add(coord);
+		}
+		
+		return coords;		
+	}
+	
 	public static List<TPLocation> parsePlacemark(Placemark p, KmlParseProgressListener listener) throws Exception{
 		Geometry geometry = p.getGeometry();
 		List<Object> coords = new ArrayList<Object>();
@@ -65,7 +76,10 @@ public class KmlUtils {
 		if(geometry instanceof Track){
 			track = (Track) p.getGeometry();
 			coords.addAll(track.getCoord());
-		}else{
+		}else if(geometry instanceof LineString){
+			LineString line = (LineString) geometry;
+			coords.addAll(line.getCoordinates());
+		}else if(geometry instanceof MultiGeometry){
 			MultiGeometry mGeo = (MultiGeometry) p.getGeometry();
 			LineString line = (LineString) mGeo.getGeometry().get(0);
 			coords.addAll(line.getCoordinates());
@@ -99,6 +113,22 @@ public class KmlUtils {
 			lastLoc = loc;
 		}
 		
+		if(!(geometry instanceof Track) && locs.get(0).getAltitude() <= 0){
+			List<TPLocation> locsWithElev = ElevationUtil.getElevationFromGoogle(locs);
+			LineString line = null;
+			
+			if(geometry instanceof LineString){
+				line = (LineString) geometry;
+			}else if(geometry instanceof MultiGeometry){
+				MultiGeometry mGeo = (MultiGeometry) p.getGeometry();
+				line = (LineString) mGeo.getGeometry().get(0);
+			}
+			
+			line.setCoordinates(tpLocationsToCoordinates(locsWithElev));
+			listener.onParseFinish(true);
+			return locsWithElev;
+		}
+		listener.onParseFinish(false);
 		return locs;
 	}
 	
@@ -128,7 +158,7 @@ public class KmlUtils {
         	}
         }
         
-        listener.onParseFinish();
+        listener.onParseFinish(false);
         
         return locs;
 	}
@@ -160,7 +190,7 @@ public class KmlUtils {
         while(it.hasNext())
         	traverseKml(it.next(), listener);
         
-        listener.onParseFinish();
+        listener.onParseFinish(false);
         
         return locs;
 	}

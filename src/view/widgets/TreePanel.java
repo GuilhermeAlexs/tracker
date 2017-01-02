@@ -29,7 +29,8 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 	private final String PREDICT_TIME = "Calcular tempo...";
 	private final String REMOVE = "Excluir";
 	private final String SAVE_IN_DB = "Salvar no Banco de Trilhas";
-
+	private final String SAVE = "Salvar";
+	
 	private DefaultMutableTreeNode rootNode;
 	private DefaultMutableTreeNode dbNode;
 	private DefaultMutableTreeNode tempNode;
@@ -71,6 +72,12 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 		
 		if(!isInDB){
 			item = new JMenuItem(SAVE_IN_DB);
+			item.addActionListener(this);
+			menu.add(item);
+		}
+		
+		if(isInDB){
+			item = new JMenuItem(SAVE);
 			item.addActionListener(this);
 			menu.add(item);
 		}
@@ -301,6 +308,10 @@ public class TreePanel extends JTree implements MouseListener, KeyListener, Acti
 			case SAVE_IN_DB:
 				treePanelListener.onTreeNodeAddedToDB(selectedNode.getUserObject(), wasSelectedAimed(selectedNode));
 
+				break;
+			case SAVE:
+				treePanelListener.onTreeNodeSaveDB(selectedNode.getUserObject(), wasSelectedAimed(selectedNode));
+				
 				break;
 		}	
 	}

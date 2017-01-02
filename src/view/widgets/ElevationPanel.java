@@ -117,14 +117,6 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		setLayout(new BorderLayout(0, 0));
 		add(numbersPanel, BorderLayout.NORTH);
     	
-		try {
-			drawElevationGraph();
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-
-		add(chartPanel, BorderLayout.CENTER);
-		
 		checkElevation = new JCheckBox("Elevação");
 		checkSpeed = new JCheckBox("Velocidade");
 		
@@ -143,6 +135,14 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		checkElevation.addItemListener(this);
 		checkSpeed.addItemListener(this);
 		
+		try {
+			drawElevationGraph();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		add(chartPanel, BorderLayout.CENTER);
+
 		JPanel bottomNumberPanels = new JPanel();
 		bottomNumberPanels.setBackground(Color.BLACK);
 		bottomNumberPanels.setLayout(new BorderLayout());
@@ -265,6 +265,9 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
         Configurations conf = Configurations.getInstance();
         
         if(speedSeriesOK){
+        	checkElevation.setVisible(true);
+        	checkSpeed.setVisible(true);
+        	
             rend.setSeriesItemLabelsVisible(ELEVATION_SERIES, false);
             rend.setSeriesPaint(ELEVATION_SERIES, conf.getElevationGraphColor());
             rend.setSeriesStroke(ELEVATION_SERIES, new BasicStroke(1.8f));
@@ -279,6 +282,9 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 
 	        rend.setSeriesOutlinePaint(SPEED_SERIES, outlineColor);
         }else{
+        	checkElevation.setVisible(false);
+        	checkSpeed.setVisible(false);
+        	
             rend.setSeriesItemLabelsVisible(0, false);
             rend.setSeriesPaint(0, conf.getElevationGraphColor());
             rend.setSeriesStroke(0, new BasicStroke(1.8f));

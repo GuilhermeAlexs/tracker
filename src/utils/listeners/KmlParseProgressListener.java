@@ -8,5 +8,5 @@ public interface KmlParseProgressListener {
 	public void onParseProgress(int progress);
 	public void onParseFolder(Folder folder);
 	public void onParsePlacemark(Placemark placemark);
-	public void onParseFinish();
+	public void onParseFinish(boolean altitudeWasDownloaded);
 }

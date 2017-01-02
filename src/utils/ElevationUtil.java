@@ -4,78 +4,110 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.net.URLConnection;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.google.maps.ElevationApi;
-import com.google.maps.GeoApiContext;
-import com.google.maps.model.ElevationResult;
-import com.google.maps.model.LatLng;
-
 import model.TPLocation;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import model.TypeConstants;
 
 public class ElevationUtil {
-
-	public static List<TPLocation> getElevationFromGoogle(List<TPLocation> locs) throws IOException{
-			
+	public static int MAX_LOCS_PER_REQUEST = 100;
+	
+	private static List<TPLocation> makeGoogleRequest(List<TPLocation> locs, int baseId) throws IOException{
 	      try {
-	    	String urlStr = "https://maps.googleapis.com/maps/api/elevation/json?locations=<locs>&key=<key>";
-	    		
+	    	String urlStr = "https://maps.googleapis.com/maps/api/elevation/json?path=<locs>&samples=<samples>&key=AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU";
+
 	    	StringBuilder sb = new StringBuilder();
 	    	TPLocation loc;
-	    	
+
 	    	for(int i = 0; i < locs.size(); i++){
 	    		loc = locs.get(i);
-	    		sb.append(loc.getLatitude() + "," + loc.getLongitude() + "%7C");
+	    		sb.append(loc.getLatitude() + "%2C" + loc.getLongitude());
+
+	    		if(i != locs.size() - 1)
+	    			sb.append("%7C");
 	    	}
-	    	
+
 	    	String locsStr = sb.toString();
 	    	locsStr = locsStr.substring(0, locsStr.length() - 1);
-	    	
-	    	urlStr.replace("<locs>", locsStr);
-	    	urlStr.replace("<key>", "AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU");
-	    	
+
+	    	urlStr = urlStr.replace("<locs>", locsStr);
+	    	urlStr = urlStr.replace("<samples>", "" + locs.size() * 2);
+
 	    	URL url = new URL(urlStr);
-	    	HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
-	    	
+	    	URLConnection con = (HttpsURLConnection)url.openConnection();
+	    	con.setUseCaches(false);
+
 	 	    BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-	    	/*JSONObject obj = new JSONObject(response.body().toString());
-	    	obj.
-	    	
-	    	LatLng [] locsReq = new LatLng[locs.size()];
-	    	TPLocation currLoc;
-	    	
-	    	for(int i = 0; i < locs.size(); i++){
-	    		currLoc = locs.get(i);
-	    		locsReq[i] = new LatLng(currLoc.getLatitude(), currLoc.getLongitude());
-	    	}
-	    	
-	    	GeoApiContext ctx = new GeoApiContext();
-	    	ctx.setApiKey("AIzaSyDDI0vYKqLBG6rL8-i8DadxFR23Odk84xU");
 
-	    	ElevationResult[] res = ElevationApi.getByPoints(ctx, locsReq).await();
-			List<TPLocation> locs2 = new ArrayList<TPLocation>();
+	 	    String rawJson = "";
+	 	    String line = "";
 
-			for(int i = 0; i < res.length; i++){
+	 	    while(true){
+	 	    	line = br.readLine();
+	 	    	
+	 	    	if(line == null)
+	 	    		break;
+	 	    	
+	 	    	rawJson = rawJson + line;
+	 	    }
+
+	    	JSONObject json = new JSONObject(rawJson.toString());
+	    	JSONArray arrJson = json.getJSONArray("results");
+	    	List<TPLocation> locs2 = new ArrayList<TPLocation>();
+
+			for(int i = 0; i < arrJson.length(); i++){
 				TPLocation l = new TPLocation();
-				l.setAltitude(res[i].elevation);
-				l.setLatitude(res[i].location.lat);
-				l.setLongitude(res[i].location.lng);
+				l.setAltitude(arrJson.getJSONObject(i).getDouble("elevation"));
+				l.setLatitude(arrJson.getJSONObject(i).getJSONObject("location").getDouble("lat"));
+				l.setLongitude(arrJson.getJSONObject(i).getJSONObject("location").getDouble("lng"));
+				l.setTypeId(TypeConstants.FIXED_TYPE_TRAIL);
+				l.setId(baseId + i);
 				locs2.add(l);
-			}*/
+			}
 
-			return null;
+			return locs2;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 		return null;
+	}
+
+	public static List<TPLocation> getElevationFromGoogle(List<TPLocation> locs) throws IOException{
+		List<TPLocation> locResult = new ArrayList<TPLocation>();
+		System.out.println("Requisitando " + locs.size() + " do Elevation API.");
+
+		if(locs.size() <= MAX_LOCS_PER_REQUEST)
+			locResult = makeGoogleRequest(locs, 0);
+		else{
+			int i, qtd, remain;
+			int baseId = 0;
+
+			qtd = (int) Math.floor(locs.size() / MAX_LOCS_PER_REQUEST);
+			remain = locs.size() % MAX_LOCS_PER_REQUEST;
+
+			for(i = 0; i < qtd; i++){
+				if(locResult.size() > 0)
+					baseId = locResult.get(locResult.size() - 1).getId() + 1;
+
+				locResult.addAll(makeGoogleRequest(locs.subList(i * MAX_LOCS_PER_REQUEST, (i + 1) * MAX_LOCS_PER_REQUEST), baseId));
+			}
+
+			if(remain > 0){
+				if(locResult.size() > 0)
+					baseId = locResult.get(locResult.size() - 1).getId() + 1;
+
+				locResult.addAll(makeGoogleRequest(locs.subList(i * MAX_LOCS_PER_REQUEST, i * MAX_LOCS_PER_REQUEST + remain), baseId));
+			}
+		}
+
+		return locResult;
 	}
 }

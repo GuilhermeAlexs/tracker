@@ -5,4 +5,5 @@ public interface TreePanelListener {
 	void onTreeNodeDeleted(Object data, boolean selectedWasAimed, boolean isInDB);
 	void onTreeNodePredictRequested(Object data, boolean selectedWasAimed, boolean isInDB);
 	void onTreeNodeAddedToDB(Object data, boolean selectedWasAimed);
+	void onTreeNodeSaveDB(Object data, boolean selectedWasAimed);
 }

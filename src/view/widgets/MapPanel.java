@@ -68,8 +68,8 @@ public class MapPanel extends JXMapViewer{
 		tileFactory.setThreadPoolSize(8);
 		
 		// Setup local file cache
-		File cacheDir = new File(System.getProperty("user.home") + File.separator + ".jxmapviewer2");
-		LocalResponseCache.installResponseCache(info.getBaseURL(), cacheDir, false);
+		//File cacheDir = new File(System.getProperty("user.home") + File.separator + ".jxmapviewer2");
+		//LocalResponseCache.installResponseCache(info.getBaseURL(), cacheDir, false);
 		
 		setTileFactory(tileFactory);
 	

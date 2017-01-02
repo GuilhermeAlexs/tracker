@@ -295,7 +295,7 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 
         NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
         domain.setLabel(null);
-        domain.setRange(0.00, i);
+        domain.setRange(0, i);
         domain.setTickUnit(new NumberTickUnit(50));
         domain.setTickLabelsVisible(false);
         domain.setAxisLineVisible(false);
@@ -404,7 +404,13 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 			Rectangle2D plotArea = chartPanel.getScreenDataArea();
 			x = (int) xyplot.getDomainAxis().java2DToValue(p.getX(), plotArea, xyplot.getDomainAxisEdge());
 		}else{
-			x = currentTrail.size() - 1;
+			x = (int) e.getTrigger().getPoint().getX();
+			Rectangle2D plotArea = chartPanel.getScreenDataArea();
+			
+			if(Math.abs(x - plotArea.getMinX()) > Math.abs(x - plotArea.getMaxX()))
+				x = currentTrail.size() - 1;
+			else
+				x = 0;
 		}
 		
 		return x;

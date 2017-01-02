@@ -276,11 +276,11 @@ public class StatisticsUtil {
 
 		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
 		int numberOfTypes = session.getStretchTypes().size();
-		TableOfValues speedTable = StatisticsUtil.calculateTableOfSpeeds(db.load(names[0]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
+		TableOfValues speedTable = StatisticsUtil.calculateTableOfSpeeds(GeoUtils.smoothAltitude(GeoUtils.smoothAltitude(db.load(names[0]))), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 		TableOfValues speedTable2;
 
 		for(int i = 1; i < names.length; i++){
-			speedTable2 = StatisticsUtil.calculateTableOfSpeeds(db.load(names[i]), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeeds(GeoUtils.smoothAltitude(GeoUtils.smoothAltitude(db.load(names[i]))), stretchTypesIdMap, numberOfTypes, steps, minSpeed, maxSpeed);
 			speedTable.setCounts(MathOperation.sumMatrix(speedTable.getCounts(), speedTable2.getCounts()));
 			speedTable.setValues(MathOperation.sumMatrix(speedTable.getValues(), speedTable2.getValues()));
 		}
@@ -307,7 +307,7 @@ public class StatisticsUtil {
 		
 		for(int i = 0; i < names.length; i++){
 			System.out.println(names[i] + ":");
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, conf);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(GeoUtils.smoothAltitude(db.load(names[i])), stretchTypesIdMap, numberOfTypes, conf);
 			restProportionMedian.addNum(speedTable2.getRestProportion());
 			
 			for(int type = 0; type < numberOfTypes; type++){

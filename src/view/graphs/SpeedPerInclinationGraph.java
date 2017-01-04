@@ -169,7 +169,7 @@ public class SpeedPerInclinationGraph extends JFrame {
         	if(function != null){        	
 		        for(double m = -90; m <= 90; m = m + 1){
 		        	try{
-		        		v = function.value(m);
+		        		v = 3.6*function.value(m);
 
 		        		if(v < 0)
 		        			continue;

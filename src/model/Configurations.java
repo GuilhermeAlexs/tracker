@@ -36,11 +36,11 @@ public class Configurations implements Serializable{
 	public static Configurations getInstance(){
 		if(INSTANCE == null){
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
-			
+
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(0.2, 10, 0.25, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
+				INSTANCE = new Configurations(0.2*3.6d, 10*3.6, 15*60d, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
 		}
-		
+
 		return INSTANCE;
 	}
 	
@@ -48,14 +48,14 @@ public class Configurations implements Serializable{
 			Color speedGraphColor, Color selectionColor){
 		if(INSTANCE == null){
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
-			
+
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(minimumSpeed, maximumSpeed, restTime, steps, elevationGraphColor, speedGraphColor, selectionColor);
+				INSTANCE = new Configurations(0.2*3.6d, 10*3.6, 15*60d, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
 		}
-		
+
 		return INSTANCE;
 	}
-	
+
 	public double getMinimumSpeed() {
 		return minimumSpeed;
 	}

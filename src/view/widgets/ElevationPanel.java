@@ -388,8 +388,8 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	}
 	
 	public void showTimeStatisticsPanel(Statistics stats){
-		labelTimeDB.setText("Tempo: " + DateUtils.hourOnlyToFormattedString(stats.getTimeInDB()));
-		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()));
+		labelTimeDB.setText("Tempo: " + DateUtils.hourOnlyToFormattedString(stats.getTimeInDB()/3600d));
+		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()/3600d));
 	}
 
 	private int getDomainFromMouse(ChartMouseEvent e){

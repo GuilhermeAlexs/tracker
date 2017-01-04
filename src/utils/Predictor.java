@@ -8,6 +8,8 @@ import java.util.Map;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
 import model.Configurations;
+import model.Stretch;
+import model.StretchIterator;
 import model.TPLocation;
 import model.TableOfValues;
 import model.ToblerFunction;
@@ -15,7 +17,7 @@ import model.TypeConstants;
 
 public class Predictor {
 	private static double predictHikingTime(List<TPLocation> path, Map<String, Integer> idMap, List<UnivariateFunction> functions, boolean shouldSmooth, Configurations conf) throws ParseException, IOException{
-		double dx, dh, m;
+		double m;
 
 		if(path.get(0).getAltitude() <= 0)
 			path = ElevationUtil.getElevationFromGoogle(path);
@@ -24,39 +26,18 @@ public class Predictor {
 				path = GeoUtils.smoothAltitude(path);
 		}
 
-		TPLocation lastLoc = path.get(0);
-
-		boolean reset = false;
 		int mappedIndexType = 0;
 		double time = 0;
 		UnivariateFunction f;
 
-		for(TPLocation loc: path){
-			if(loc.getTypeId().equals(TypeConstants.FIXED_TYPE_INVALID)){
-				reset = true;
-				continue;
-			}
+		StretchIterator it = new StretchIterator(path);
+		Stretch stretch;
 
-			if(reset){
-				reset = false;
-				lastLoc = loc;
-			}
-
-			if(loc == lastLoc)
-				continue;
-
-			dx = (GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude()))/1000;
-			dh = (loc.getAltitude() - lastLoc.getAltitude())/1000;
-			
-			m = Math.toDegrees(Math.atan(((double)dh)/((double)dx)));
-
-			if( m > 90 )
-				m = 90;
-			else if( m < -90)
-				m = -90;
+		while(it.hasNext()){
+			stretch = it.next();
 
 			try{
-				mappedIndexType = idMap.get(lastLoc.getTypeId());
+				mappedIndexType = idMap.get(stretch.getStart().getTypeId());
 			}catch (Exception e){
 				mappedIndexType = idMap.get(TypeConstants.FIXED_TYPE_TRAIL);
 			}
@@ -65,12 +46,12 @@ public class Predictor {
 
 			if(f != null){
 				if(f instanceof ToblerFunction)
-					m = (double)dh/(double)dx;
+					m = Math.tan(Math.toRadians(stretch.getInclination()));
+				else
+					m = Math.toDegrees(Math.atan(stretch.getInclination()));
 
-				time = time + (dx/f.value(m));
+				time = time + (stretch.getDistance()/f.value(m));
 			}
-
-			lastLoc = loc;
 		}
 
 		return time;
@@ -78,7 +59,6 @@ public class Predictor {
 
 	public static double predict(List<TPLocation> path, TableOfValues avgTable, Map<String, Integer> idMap, List<UnivariateFunction> functions, boolean shouldSmooth, Configurations conf) throws ParseException, IOException{
 		double hikingTime = predictHikingTime(path, idMap, functions, shouldSmooth, conf);
-
-		return hikingTime + avgTable.getRestProportion()*hikingTime;
+		return hikingTime + (avgTable.getRestProportion() * hikingTime);
 	}
 }

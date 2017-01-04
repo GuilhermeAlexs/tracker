@@ -46,9 +46,9 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 	private void initializeFields(){
 		Configurations conf = Configurations.getInstance();
 
-		spnMinimumSpeed.setValue(conf.getMinimumSpeed());
-		spnMaximumSpeed.setValue(conf.getMaximumSpeed());
-		spnRestTime.setValue(conf.getRestTime()*60);
+		spnMinimumSpeed.setValue(conf.getMinimumSpeed() / 3.6d);
+		spnMaximumSpeed.setValue(conf.getMaximumSpeed() / 3.6d);
+		spnRestTime.setValue(conf.getRestTime() / 60d);
 		spnSteps.setValue(conf.getSteps());
 
 		panelElevationColor.setBackground(conf.getElevationGraphColor());
@@ -223,16 +223,16 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 				String pass = fieldPassword.getText();
 
 				if(min != null && min > 0)
-					conf.setMinimumSpeed(min);
+					conf.setMinimumSpeed(min * 3.6d);
 
 				if(max != null && min > 0)
-					conf.setMaximumSpeed(max);
+					conf.setMaximumSpeed(max * 3.6d);
 
 				if(steps != null && min > 0)
 					conf.setSteps(steps);
 
 				if(restTime != null && restTime > 0)
-					conf.setRestTime(restTime/60);
+					conf.setRestTime(restTime * 60d);
 
 				conf.setElevationGraphColor(elevColor);
 				conf.setSpeedGraphColor(speedColor);

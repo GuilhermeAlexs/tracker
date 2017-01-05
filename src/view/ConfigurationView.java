@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.border.BevelBorder;
@@ -46,8 +47,8 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 	private void initializeFields(){
 		Configurations conf = Configurations.getInstance();
 
-		spnMinimumSpeed.setValue(conf.getMinimumSpeed() / 3.6d);
-		spnMaximumSpeed.setValue(conf.getMaximumSpeed() / 3.6d);
+		spnMinimumSpeed.setValue(conf.getMinimumSpeed() * 3.6f);
+		spnMaximumSpeed.setValue(conf.getMaximumSpeed() * 3.6f);
 		spnRestTime.setValue(conf.getRestTime() / 60d);
 		spnSteps.setValue(conf.getSteps());
 
@@ -62,7 +63,9 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 	}
 
 	public ConfigurationView() {
+		setTitle("Configurações");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setIconImage(new ImageIcon("images/logo.png").getImage());
 		setBounds(100, 100, 497, 324);
 		setResizable(false);
 
@@ -223,16 +226,16 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 				String pass = fieldPassword.getText();
 
 				if(min != null && min > 0)
-					conf.setMinimumSpeed(min * 3.6d);
+					conf.setMinimumSpeed(min / 3.6f);
 
 				if(max != null && min > 0)
-					conf.setMaximumSpeed(max * 3.6d);
+					conf.setMaximumSpeed(max / 3.6f);
 
 				if(steps != null && min > 0)
 					conf.setSteps(steps);
 
 				if(restTime != null && restTime > 0)
-					conf.setRestTime(restTime * 60d);
+					conf.setRestTime(restTime * 60f);
 
 				conf.setElevationGraphColor(elevColor);
 				conf.setSpeedGraphColor(speedColor);

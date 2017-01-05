@@ -51,4 +51,9 @@ public final class DateUtils {
     	else
     		return String.format("%s:0%s", hours, minutes);
     }
+    
+    public static String secondsOnlyToFormattedString(double secondsRaw){
+    	double hoursRaw = secondsRaw/3600f;
+    	return hourOnlyToFormattedString(hoursRaw);
+    }
 }

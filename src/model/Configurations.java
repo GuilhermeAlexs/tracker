@@ -9,7 +9,7 @@ public class Configurations implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	private static Configurations INSTANCE;
-	
+
 	private double minimumSpeed;
 	private double maximumSpeed;
 	private double restTime;
@@ -21,9 +21,9 @@ public class Configurations implements Serializable{
 	private String proxyUser = "";
 	private String proxyPassword = "";
 	private String proxyPort = "";
-	
-	private Configurations(double minimumSpeed, double maximumSpeed, double restTime, double steps, Color elevationGraphColor,
-			Color speedGraphColor, Color selectionColor) {
+
+	private Configurations(double minimumSpeed, double maximumSpeed, double restTime, double steps, 
+			Color elevationGraphColor,Color speedGraphColor, Color selectionColor) {
 		this.minimumSpeed = minimumSpeed;
 		this.maximumSpeed = maximumSpeed;
 		this.restTime = restTime;
@@ -38,19 +38,21 @@ public class Configurations implements Serializable{
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
 
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(0.2*3.6d, 10*3.6, 15*60d, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
+				INSTANCE = new Configurations(0.2f/3.6f, 10f/3.6f, 15f*60f, 1, new Color(221, 141, 22),
+						new Color(163, 194, 224, 90), Color.RED);
 		}
 
 		return INSTANCE;
 	}
-	
-	public static Configurations getInstance(double minimumSpeed, double maximumSpeed, double restTime, double steps, Color elevationGraphColor,
-			Color speedGraphColor, Color selectionColor){
+
+	public static Configurations getInstance(double minimumSpeed, double maximumSpeed, double restTime,
+			double steps, Color elevationGraphColor,Color speedGraphColor, Color selectionColor){
 		if(INSTANCE == null){
 			INSTANCE = DatabaseManager.getInstance().loadConfigurations();
 
 			if(INSTANCE == null)
-				INSTANCE = new Configurations(0.2*3.6d, 10*3.6, 15*60d, 1, new Color(221, 141, 22), new Color(163, 194, 224, 90), Color.RED);
+				INSTANCE = new Configurations(0.2f/3.6f, 10f/3.6f, 15f*60f, 1, new Color(221, 141, 22),
+						new Color(163, 194, 224, 90), Color.RED);
 		}
 
 		return INSTANCE;

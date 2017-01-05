@@ -174,7 +174,7 @@ public class SpeedPerInclinationGraph extends JFrame {
 		        		if(v < 0)
 		        			continue;
 
-		        		series.add(m, v);
+		        		series.add(m, 3.6*v);
 		        	}catch(OutOfRangeException e){
 
 		        	}

@@ -220,8 +220,8 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		while(loc != null){
 			if(speedSeriesOK){
 				dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude());
-				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/1000d;
-				v = base + (1.7*max*3.6*Math.abs(dx/dt));
+				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/1000f;
+				v = base + (1.5*max*Math.abs(dx/dt));
 				
 				if(v > Configurations.getInstance().getMinimumSpeed()){
 					indexes[i] = i;
@@ -388,8 +388,8 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 	}
 	
 	public void showTimeStatisticsPanel(Statistics stats){
-		labelTimeDB.setText("Tempo: " + DateUtils.hourOnlyToFormattedString(stats.getTimeInDB()/3600d));
-		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()/3600d));
+		labelTimeDB.setText("Tempo: " + DateUtils.secondsOnlyToFormattedString(stats.getTimeInDB()));
+		labelTimeTobler.setText("Tempo Tobler: " + DateUtils.hourOnlyToFormattedString(stats.getTimeTobler()));
 	}
 
 	private int getDomainFromMouse(ChartMouseEvent e){

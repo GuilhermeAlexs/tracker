@@ -38,19 +38,19 @@ public class StatisticsUtil {
 		double maxInclinationNegative = 0;
 
 		double length = 0;
-		
+
 		double inclinationDegree;
 
 		MedianFinder medIncliPos = new MedianFinder();
 		MedianFinder medIncliNeg = new MedianFinder();
 		MedianFinder medElev = new MedianFinder();
-		
+
 		StretchIterator it = new StretchIterator(path);
 		Stretch stretch;
-		
+
 		while(it.hasNext()){
 			stretch = it.next();
-	
+
 			if(stretch.getStart().getAltitude() > maxElevation)
 				maxElevation = stretch.getStart().getAltitude(); 
 
@@ -58,11 +58,10 @@ public class StatisticsUtil {
 				minElevation = stretch.getStart().getAltitude(); 
 
 			medElev.addNum(stretch.getStart().getAltitude());
-			
-			inclinationDegree = Math.toDegrees(Math.atan(stretch.getInclination()));
 
+			inclinationDegree = Math.toDegrees(stretch.getTheta());
 			inclinations.add(inclinationDegree);
-			
+
 			if(inclinationDegree > 0){
 				elevationGain = elevationGain + stretch.getDiffAltitude();
 				medIncliPos.addNum(inclinationDegree);
@@ -117,7 +116,7 @@ public class StatisticsUtil {
 			stretch = it.next();
 
 			dtTotal = dtTotal + stretch.getTime();
-			
+
 			if(stretch.getSpeed() < conf.getMinimumSpeed()){
 				if(stretch.getTime() < conf.getRestTime()){
 					if(canTakeRestInAccount){
@@ -137,7 +136,6 @@ public class StatisticsUtil {
 			index = getIndexByInterval(Math.toDegrees(stretch.getTheta()), 
 					conf.getSteps());
 
-			System.out.println("ANGLE: " + Math.toDegrees(stretch.getTheta()));
 			try{
 				mappedIndexType = idMap.get(stretch.getStart().getTypeId());
 			}catch (Exception e){
@@ -153,8 +151,6 @@ public class StatisticsUtil {
 
 		TableOfValues table = new TableOfValues(matrix, null, (double)dtAcc/(double)dtTotal);
 
-		System.out.println("   dtAcc: " + dtAcc);
-		System.out.println("   dtTotal: " + dtTotal);
 		System.out.println("   Tempo Parado: " + 100*((double)dtAcc/(double)dtTotal) + "%");
 		return table;
 	}
@@ -178,7 +174,7 @@ public class StatisticsUtil {
 		
 		for(int i = 0; i < names.length; i++){
 			System.out.println(names[i] + ":");
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(GeoUtils.smoothAltitude(db.load(names[i])), stretchTypesIdMap, numberOfTypes, conf);
+			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, conf);
 			restProportionMedian.addNum(speedTable2.getRestProportion());
 			
 			for(int type = 0; type < numberOfTypes; type++){
@@ -237,13 +233,15 @@ public class StatisticsUtil {
 					minIncli = inclination;
 
 				inclinations.add(inclination);
-				values.add(value*3.6d);
+				values.add(value);
 			}
 
 			if(inclinations.size() > 0){
 				try{
-					UnivariateFunction predFunc = new PredictorFunction(interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
-							values.stream().mapToDouble(j -> j).toArray()), minIncli, maxIncli);
+					UnivariateFunction predFunc = new PredictorFunction(
+							interpolator.interpolate(inclinations.stream().mapToDouble(j -> j).toArray(), 
+							values.stream().mapToDouble(j -> j).toArray()), minIncli, maxIncli, 
+							Session.getInstance().getStretchTypes().get(getIdFromIndexType(i)));
 					listFunc.add(predFunc);
 				}catch(Exception e){
 					listFunc.add(null);

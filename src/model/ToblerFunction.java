@@ -6,23 +6,23 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 //Dessa forma é possível usar várias funções diferentes (de interpolação,
 //de regressão e esta) dentro de uma mesma lista.
 public class ToblerFunction implements UnivariateFunction{
-	private double modifier;
+	private double maxSpeed = 4.3f;
 	
-	public ToblerFunction(double modifier) {
-		this.modifier = modifier;
+	public ToblerFunction(double maxSpeed) {
+		this.maxSpeed = maxSpeed;
 	}
 
-	public double getModifier() {
-		return modifier;
+	public double getMaxSpeed() {
+		return maxSpeed;
 	}
 
-	public void setModifier(double modifier) {
-		this.modifier = modifier;
+	public void setMaxSpeed(double maxSpeed) {
+		this.maxSpeed = maxSpeed;
 	}
 
 	@Override
 	public double value(double x) {
-		return 4.3*Math.pow(Math.E,-3.5d*Math.abs(x + 0.05d));
+		return maxSpeed*Math.pow(Math.E,-3.5d*Math.abs(x + 0.05d));
 	}
 }
 

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
 import model.Configurations;
+import model.PredictorFunction;
 import model.Stretch;
 import model.StretchIterator;
 import model.TPLocation;
@@ -21,10 +22,6 @@ public class Predictor {
 
 		if(path.get(0).getAltitude() <= 0)
 			path = ElevationUtil.getElevationFromGoogle(path);
-		else{
-			if(shouldSmooth)
-				path = GeoUtils.smoothAltitude(path);
-		}
 
 		int mappedIndexType = 0;
 		double time = 0;
@@ -45,12 +42,15 @@ public class Predictor {
 			f = functions.get(mappedIndexType);
 
 			if(f != null){
-				if(f instanceof ToblerFunction)
-					m = Math.tan(Math.toRadians(stretch.getInclination()));
-				else
-					m = Math.toDegrees(Math.atan(stretch.getInclination()));
-
-				time = time + (stretch.getDistance()/f.value(m));
+				if(f instanceof ToblerFunction){
+					m = stretch.getInclination();
+					time = time + ((stretch.getDistance()/1000f) / f.value(m));
+					System.out.println("TOBLER SPEED: " + f.value(m));
+				}else{
+					m = Math.toDegrees(stretch.getTheta());
+					time = time + (stretch.getDistance()/f.value(m));
+					System.out.println("DB SPEED: " + f.value(m)*3.6f);
+				}
 			}
 		}
 
@@ -59,6 +59,7 @@ public class Predictor {
 
 	public static double predict(List<TPLocation> path, TableOfValues avgTable, Map<String, Integer> idMap, List<UnivariateFunction> functions, boolean shouldSmooth, Configurations conf) throws ParseException, IOException{
 		double hikingTime = predictHikingTime(path, idMap, functions, shouldSmooth, conf);
+
 		return hikingTime + (avgTable.getRestProportion() * hikingTime);
 	}
 }

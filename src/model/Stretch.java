@@ -10,7 +10,7 @@ public class Stretch {
 	private TPLocation end;
 	private double distance; //m
 	private double diffAltitude; //m
-	private double inclination; //graus
+	private double inclination;
 	private double speed; //m por s
 	private double time; //s
 	
@@ -50,6 +50,10 @@ public class Stretch {
 	
 	public double getDiffAltitude() {
 		return diffAltitude;
+	}
+	
+	public double getTheta(){
+		return Math.atan2(diffAltitude, distance);
 	}
 
 	private void performCalculations(){

@@ -134,10 +134,10 @@ public class StatisticsUtil {
 			if(stretch.getSpeed() >= conf.getMaximumSpeed())
 				continue;
 
-			index = getIndexByInterval(Math.toDegrees(Math.atan(stretch.getInclination())), 
+			index = getIndexByInterval(Math.toDegrees(stretch.getTheta()), 
 					conf.getSteps());
 
-			System.out.println("ANGLE: " + Math.toDegrees(Math.atan(stretch.getInclination())));
+			System.out.println("ANGLE: " + Math.toDegrees(stretch.getTheta()));
 			try{
 				mappedIndexType = idMap.get(stretch.getStart().getTypeId());
 			}catch (Exception e){

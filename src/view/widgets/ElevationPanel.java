@@ -219,11 +219,11 @@ public class ElevationPanel extends JPanel implements ChartMouseListener, MouseL
 		
 		while(loc != null){
 			if(speedSeriesOK){
-				dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude())/1000;
-				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/(double)3600000;
-				v = base + (1.7*max*Math.abs(dx/dt));
+				dx = GeoUtils.computeDistance(loc.getLatitude(), loc.getLongitude(), lastLoc.getLatitude(), lastLoc.getLongitude());
+				dt = (DateUtils.toCalendar(loc.getWhen()).getTimeInMillis() - DateUtils.toCalendar(lastLoc.getWhen()).getTimeInMillis())/1000d;
+				v = base + (1.7*max*3.6*Math.abs(dx/dt));
 				
-				if(v > 0.2){
+				if(v > Configurations.getInstance().getMinimumSpeed()){
 					indexes[i] = i;
 					speeds[i] = v;
 				}

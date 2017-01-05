@@ -53,16 +53,16 @@ public class Stretch {
 	}
 
 	private void performCalculations(){
-		distance = GeoUtils.computeDistance(end.getLatitude(), end.getLongitude(), 
-				start.getLatitude(), start.getLongitude());
+		distance = GeoUtils.computeDistance(start.getLatitude(), start.getLongitude(), 
+				end.getLatitude(), end.getLongitude());
 		
-		diffAltitude = (end.getAltitude() - start.getAltitude());
+		diffAltitude = end.getAltitude() - start.getAltitude();
 		
 		inclination = diffAltitude/(double)distance;
 		
 		try {
 			time = (DateUtils.toCalendar(end.getWhen()).getTimeInMillis() - 
-					DateUtils.toCalendar(start.getWhen()).getTimeInMillis())/(double)1000;
+					DateUtils.toCalendar(start.getWhen()).getTimeInMillis())/1000d;
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

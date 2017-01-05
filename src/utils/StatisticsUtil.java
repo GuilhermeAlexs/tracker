@@ -116,32 +116,28 @@ public class StatisticsUtil {
 		while(it.hasNext()){
 			stretch = it.next();
 
+			dtTotal = dtTotal + stretch.getTime();
+			
 			if(stretch.getSpeed() < conf.getMinimumSpeed()){
 				if(stretch.getTime() < conf.getRestTime()){
 					if(canTakeRestInAccount){
 						canTakeRestInAccount = false;
-						dtAcc = stretch.getTime() + dtAcc;
+						dtAcc = dtAcc + stretch.getTime();
 					}
 				}
-
-				if(it.hasNext())
-					it.next();
 
 				continue;
 			}
 
 			canTakeRestInAccount = true;
 
-			if(stretch.getSpeed() >= conf.getMaximumSpeed()){
-				if(it.hasNext())
-					it.next();
+			if(stretch.getSpeed() >= conf.getMaximumSpeed())
 				continue;
-			}
 
-			dtTotal = dtTotal + stretch.getTime();
 			index = getIndexByInterval(Math.toDegrees(Math.atan(stretch.getInclination())), 
 					conf.getSteps());
 
+			System.out.println("ANGLE: " + Math.toDegrees(Math.atan(stretch.getInclination())));
 			try{
 				mappedIndexType = idMap.get(stretch.getStart().getTypeId());
 			}catch (Exception e){
@@ -157,7 +153,7 @@ public class StatisticsUtil {
 
 		TableOfValues table = new TableOfValues(matrix, null, (double)dtAcc/(double)dtTotal);
 
-		System.out.println("   Acc: " + dtAcc);
+		System.out.println("   dtAcc: " + dtAcc);
 		System.out.println("   dtTotal: " + dtTotal);
 		System.out.println("   Tempo Parado: " + 100*((double)dtAcc/(double)dtTotal) + "%");
 		return table;
@@ -241,7 +237,7 @@ public class StatisticsUtil {
 					minIncli = inclination;
 
 				inclinations.add(inclination);
-				values.add(value);
+				values.add(value*3.6d);
 			}
 
 			if(inclinations.size() > 0){

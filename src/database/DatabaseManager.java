@@ -12,6 +12,7 @@ import java.util.Properties;
 import model.Configurations;
 import model.StretchType;
 import model.TPLocation;
+import utils.GeoUtils;
 
 public class DatabaseManager {
 	private static DatabaseManager INSTANCE;

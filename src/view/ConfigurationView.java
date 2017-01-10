@@ -25,10 +25,11 @@ import javax.swing.JColorChooser;
 import javax.swing.border.BevelBorder;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.JCheckBox;
 
 public class ConfigurationView extends JFrame implements ActionListener, MouseListener {
 	private static final long serialVersionUID = 2241763796533710077L;
-	
+
 	private JPanel contentPane;
 	private JSpinner spnMinimumSpeed;
 	private JSpinner spnMaximumSpeed;
@@ -43,6 +44,7 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 	private JTextField fieldAddress;
 	private JTextField fieldPort;
 	private JSpinner spnRestTime;
+	private JCheckBox checkSmooth;
 
 	private void initializeFields(){
 		Configurations conf = Configurations.getInstance();
@@ -60,6 +62,8 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 		fieldPassword.setText(conf.getProxyPassword());
 		fieldAddress.setText(conf.getProxyAddress());
 		fieldPort.setText(conf.getProxyPort());
+
+		checkSmooth.setSelected(conf.isSmooth());
 	}
 
 	public ConfigurationView() {
@@ -78,7 +82,7 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel panel = new JPanel();
-		tabbedPane.addTab("Limites", null, panel, null);
+		tabbedPane.addTab("Limites e Cálculos", null, panel, null);
 		panel.setLayout(null);
 
 		JLabel lblVelocidadeMnima = new JLabel("Velocidade M\u00EDnima:");
@@ -104,14 +108,19 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 		spnSteps = new JSpinner(new SpinnerNumberModel(1d, 1d, 10d, 1d));
 		spnSteps.setBounds(12, 168, 120, 20);
 		panel.add(spnSteps);
-		
+
 		JLabel lblTempoDeDescanso = new JLabel("Tempo de Descanso:");
 		lblTempoDeDescanso.setBounds(288, 23, 169, 15);
 		panel.add(lblTempoDeDescanso);
-		
+
 		spnRestTime = new JSpinner(new SpinnerNumberModel(1d, 1d, 60d, 1d));
 		spnRestTime.setBounds(288, 50, 120, 20);
 		panel.add(spnRestTime);
+
+		checkSmooth = new JCheckBox("Suavizar Altitude");
+		checkSmooth.setSelected(true);
+		checkSmooth.setBounds(288, 107, 169, 23);
+		panel.add(checkSmooth);
 
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("Aparência", null, panel_2, null);
@@ -244,6 +253,7 @@ public class ConfigurationView extends JFrame implements ActionListener, MouseLi
 				conf.setProxyUser(user);
 				conf.setProxyPassword(pass);
 				conf.setProxyPort(port);
+				conf.setSmooth(checkSmooth.isSelected());
 
 				NetworkUtils.useProxy(conf.getProxyAddress(), conf.getProxyPort(), 
 						conf.getProxyUser(), conf.getProxyPassword());

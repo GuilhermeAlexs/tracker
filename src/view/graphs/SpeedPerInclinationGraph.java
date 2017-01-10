@@ -26,6 +26,7 @@ import org.jfree.ui.RectangleInsets;
 
 import model.TypeConstants;
 import model.StretchType;
+import model.ToblerFunction;
 import view.Session;
 
 public class SpeedPerInclinationGraph extends JFrame {
@@ -185,6 +186,20 @@ public class SpeedPerInclinationGraph extends JFrame {
 
         	dataset.addSeries(series);
         }
+        
+        XYSeries series = new XYSeries("Tobler");
+        function = new ToblerFunction(4.3f);
+        
+        for(double m = -90; m <= 90; m = m + 1){
+        	try{
+        		v = function.value(Math.tan(Math.toRadians(m)));
+        		series.add(m, v);
+        	}catch(OutOfRangeException e){
+
+        	}
+        }
+
+        dataset.addSeries(series);
 
         return dataset;
     }

@@ -108,7 +108,7 @@ public class GeoUtils {
     		med.addNum(before1.getAltitude());
     		med.addNum(curr.getAltitude());
     		med.addNum(after1.getAltitude());
-    		output = (before1.getAltitude() + curr.getAltitude() + after1.getAltitude())/(double)3;
+    		//output = (before1.getAltitude() + curr.getAltitude() + after1.getAltitude())/(double)3;
     		
 			loc = new TPLocation();
 			loc.setId(curr.getId());
@@ -117,7 +117,7 @@ public class GeoUtils {
 			loc.setSelected(curr.isSelected());
 			loc.setTypeId(curr.getTypeId());
 			loc.setWhen(curr.getWhen());
-			loc.setAltitude(output);
+			loc.setAltitude(med.findMedian());
 			
 			path2.add(loc);
     	}

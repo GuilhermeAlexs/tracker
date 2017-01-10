@@ -33,22 +33,22 @@ import javax.swing.SwingUtilities;
 
 public class StretchManager extends JFrame implements ActionListener, MouseListener, KeyListener {
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final String ADD_EVT = "add";
 	private static final String EDIT_EVT = "edit";
 	private static final String REM_EVT = "remove";
 	private static final String SAVE_EVT = "save";
 	private static final String CANCEL_EVT = "cancel";
-	
+
 	private DefaultListModel<StretchType> listModel;
-	
+
 	private JPanel contentPane;
 	private JList<StretchType> listStretchs;
 	private Session session;
-	
+
 	public StretchManager() {
 		this.session = Session.getInstance();
-		
+
 		setTitle("Gerenciar Trechos");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setIconImage(new ImageIcon("images/logo.png").getImage());
@@ -65,13 +65,13 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 
 		addButtonsToToolbar(toolbar);
 		contentPane.add(toolbar, BorderLayout.WEST);
-		
+
 		listModel = new DefaultListModel<>();
-		
+
 		for (Map.Entry<String, StretchType> entry : session.getStretchTypes().entrySet()){
 			listModel.addElement(entry.getValue());
 		}
-		
+
 		listStretchs = new JList<StretchType>(listModel);
 		listStretchs.setCellRenderer(new StretchTypeRenderer());
 		listStretchs.setBounds(10, 11, 396, 197);
@@ -128,7 +128,7 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 		dialog.setVisible(true);
 		dialog.setResizable(false);
 	}
-	
+
 	private void removeCurrentStretchType(){
 		int ret = JOptionPane.showConfirmDialog(this, "Você está prestes a remover um tipo. Todos os trechos marcados com esse \n"
 				+ "tipo serão automaticamente marcados como tipo TRILHA. Confirma a remoção?", "Remover Tipo", JOptionPane.YES_NO_OPTION);
@@ -140,7 +140,7 @@ public class StretchManager extends JFrame implements ActionListener, MouseListe
 			DatabaseManager.getInstance().saveStretchTypes(session.getStretchTypes());
 		}
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		switch(e.getActionCommand()){

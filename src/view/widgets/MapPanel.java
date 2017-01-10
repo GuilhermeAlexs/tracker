@@ -88,7 +88,7 @@ public class MapPanel extends JXMapViewer{
 		addMouseMotionListener(sa); 
 		addMouseListener(sa); 
 		setOverlayPainter(sp);
-		
+
 		setPreferredSize(new java.awt.Dimension(300, 440));
 	
 		resetMap();

@@ -9,7 +9,9 @@ public class NetworkUtils {
 		Properties systemSettings = System.getProperties();
 		systemSettings.put("http.proxyHost", address);
 		systemSettings.put("http.proxyPort", port);
-
+		systemSettings.put("https.proxyHost", address);
+		systemSettings.put("https.proxyPort", port);
+	
 		Authenticator.setDefault(
 		   new Authenticator() {
 		      @Override
@@ -22,5 +24,7 @@ public class NetworkUtils {
 
 		System.setProperty("http.proxyUser", user);
 		System.setProperty("http.proxyPassword", password);
+		System.setProperty("https.proxyUser", user);
+		System.setProperty("https.proxyPassword", password);
 	}
 }

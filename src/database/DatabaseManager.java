@@ -207,6 +207,9 @@ public class DatabaseManager {
 			ex.printStackTrace();
 		}
 
+		if(Configurations.getInstance().isSmooth())
+			trail = GeoUtils.smoothAltitude(trail);
+		
 		return trail;
 	}
 

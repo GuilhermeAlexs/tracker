@@ -254,7 +254,6 @@ public class StatisticsUtil {
 		return listFunc;
 	}
 
-
 	public static List<UnivariateFunction> getListOfPredictionFunctions(double [][] avgSpeedTable, Configurations conf){
 		Session session = Session.getInstance();
 		double speed, inclination;

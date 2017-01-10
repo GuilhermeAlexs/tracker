@@ -21,6 +21,7 @@ public class Configurations implements Serializable{
 	private String proxyUser = "";
 	private String proxyPassword = "";
 	private String proxyPort = "";
+	private boolean smooth = false;
 
 	private Configurations(double minimumSpeed, double maximumSpeed, double restTime, double steps, 
 			Color elevationGraphColor,Color speedGraphColor, Color selectionColor) {
@@ -144,5 +145,13 @@ public class Configurations implements Serializable{
 
 	public void setProxyPort(String proxyPort) {
 		this.proxyPort = proxyPort;
+	}
+
+	public boolean isSmooth() {
+		return smooth;
+	}
+
+	public void setSmooth(boolean smooth) {
+		this.smooth = smooth;
 	}
 }

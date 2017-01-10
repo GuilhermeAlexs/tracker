@@ -178,11 +178,10 @@ public class KmlUtils {
 		return;
 	}
 	
-	public static List<TPLocation> parseKml(Kml kml, KmlParseProgressListener listener){
+	public static void parseKml(Kml kml, KmlParseProgressListener listener){
 		Document doc = (Document) kml.getFeature();
         List<Feature> listFeat = doc.getFeature();
-        Iterator<Feature> it = listFeat.iterator(); 
-        List<TPLocation> locs = new ArrayList<TPLocation>();
+        Iterator<Feature> it = listFeat.iterator();
         
 		if(listener != null)
 			listener.onPreParse(0);
@@ -191,7 +190,5 @@ public class KmlUtils {
         	traverseKml(it.next(), listener);
         
         listener.onParseFinish(false);
-        
-        return locs;
 	}
 }

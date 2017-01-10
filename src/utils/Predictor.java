@@ -28,9 +28,7 @@ public class Predictor {
 
 		StretchIterator it = new StretchIterator(path);
 		Stretch stretch;
-		int counter = 0;
-		double velSum = 0;
-		
+
 		while(it.hasNext()){
 			stretch = it.next();
 
@@ -46,19 +44,13 @@ public class Predictor {
 				if(f instanceof ToblerFunction){
 					m = stretch.getInclination();
 					time = time + ((stretch.getDistance() / 1000f) / f.value(m));
-					velSum = velSum + (f.value(m));
 				}else{
 					m = Math.toDegrees(stretch.getTheta());
 					time = time + (stretch.getDistance() / f.value(m));
-					velSum = velSum + (f.value(m)*3.6f);
-				}
-
-				counter++;
-				
+				}				
 			}
 		}
 
-		System.out.println("MED SPEED: " + (velSum/(double)counter));
 		return time;
 	}
 

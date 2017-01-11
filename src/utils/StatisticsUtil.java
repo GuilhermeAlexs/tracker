@@ -98,7 +98,7 @@ public class StatisticsUtil {
 		return (int) Math.floor(((double)(m + 90))/((double)step));
 	}
 
-	public static TableOfValues calculateTableOfSpeedsWithMedian(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, Configurations conf) throws ParseException{	
+	public static TableOfValues calculateSingleSpeedMatrix(List<TPLocation> path, Map<String, Integer> idMap, int numberOfTypes, Configurations conf) throws ParseException{	
 		int sizeIncli = (int)(180/conf.getSteps());
 		double [][] matrix = new double[numberOfTypes][sizeIncli];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][sizeIncli];
@@ -155,28 +155,25 @@ public class StatisticsUtil {
 		return table;
 	}
 
-	public static TableOfValues getMedianSpeedMatrix(Configurations conf) throws ParseException{
+	public static TableOfValues calculateAverageSpeedMatrix(Map<String, Integer> idMap, int numberOfTypes, Configurations conf) throws ParseException{
 		DatabaseManager db = DatabaseManager.getInstance();
 		String [] names = db.getAllTrailsNames();
-		Session session = Session.getInstance();
 
 		if(names == null)
 			return null;
-
-		Map<String, Integer> stretchTypesIdMap = session.getStretchTypesIdMap();
-		int numberOfTypes = session.getStretchTypes().size();
+		
 		TableOfValues speedTable2;
 
 		int sizeIncli = (int)(180/conf.getSteps());
 		double [][] avgSpeedTable = new double[numberOfTypes][sizeIncli];
 		MedianFinder [][] medianFinder = new MedianFinder[numberOfTypes][sizeIncli];
 		MedianFinder restProportionMedian = new MedianFinder();
-		
+
 		for(int i = 0; i < names.length; i++){
 			System.out.println(names[i] + ":");
-			speedTable2 = StatisticsUtil.calculateTableOfSpeedsWithMedian(db.load(names[i]), stretchTypesIdMap, numberOfTypes, conf);
+			speedTable2 = StatisticsUtil.calculateSingleSpeedMatrix(db.load(names[i]), idMap, numberOfTypes, conf);
 			restProportionMedian.addNum(speedTable2.getRestProportion());
-			
+
 			for(int type = 0; type < numberOfTypes; type++){
 				for(int m = 0; m < sizeIncli; m++){
 					if(speedTable2.getValues()[type][m] == 0)
@@ -190,17 +187,17 @@ public class StatisticsUtil {
 				}
 			}
 		}
-		
+
 		TableOfValues table = new TableOfValues(avgSpeedTable, null, restProportionMedian.findMedian());
 
 		return table;
 	}
 
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, Configurations conf){
-		return getListOfFunctionsWithLoess(avgSpeedTable, -1, conf);
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] speedTable, Configurations conf){
+		return getListOfFunctionsWithLoess(speedTable, -1, conf);
 	}
 
-	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] avgSpeedTable, int type, Configurations conf){
+	public static List<UnivariateFunction> getListOfFunctionsWithLoess(double [][] speedTable, int type, Configurations conf){
 		double value;
 		double inclination;
 		double maxIncli = -200;
@@ -218,8 +215,8 @@ public class StatisticsUtil {
 			List<Double> inclinations = new ArrayList<Double>();
 			List<Double> values = new ArrayList<Double>();
 
-			for(int j = 0; j < avgSpeedTable[i].length; j++){
-				value = avgSpeedTable[i][j];
+			for(int j = 0; j < speedTable[i].length; j++){
+				value = speedTable[i][j];
 
 				if(value == 0)
 					continue;
@@ -254,7 +251,7 @@ public class StatisticsUtil {
 		return listFunc;
 	}
 
-	public static List<UnivariateFunction> getListOfPredictionFunctions(double [][] avgSpeedTable, Configurations conf){
+	public static List<UnivariateFunction> getListOfPredictionFunctions(double [][] speedTable, Configurations conf){
 		Session session = Session.getInstance();
 		double speed, inclination;
 
@@ -269,14 +266,14 @@ public class StatisticsUtil {
 			behaviorType = session.getStretchTypes().get(typeID).getBehaviorType();
 
 			if(behaviorType == BehaviorType.OTHER){
-				listFunc.addAll(getListOfFunctionsWithLoess(avgSpeedTable, i, conf));
+				listFunc.addAll(getListOfFunctionsWithLoess(speedTable, i, conf));
 				continue;
 			}
 
 			Regression regression = null;
 
-			for(int j = 0; j < avgSpeedTable[i].length; j++){
-				speed = avgSpeedTable[i][j];
+			for(int j = 0; j < speedTable[i].length; j++){
+				speed = speedTable[i][j];
 
 				if(speed == 0)
 					continue;

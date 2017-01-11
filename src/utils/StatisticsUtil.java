@@ -286,7 +286,8 @@ public class StatisticsUtil {
 				regression.addObservation(inclination,speed);
 			}
 
-			listFunc.add(regression.getFunction());
+			if(regression != null)
+				listFunc.add(regression.getFunction());
 		}
 
 		return listFunc;
